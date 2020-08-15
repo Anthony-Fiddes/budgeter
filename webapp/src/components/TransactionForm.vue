@@ -1,16 +1,16 @@
 <template>
   <!-- TODO: Add a field for the date, or some kind of extra settings -->
-  <div class="columns is-1 is-variable item-form">
-    <div class="column content">
-      <h1>Item</h1>
-      <input class="input" type="text" placeholder="Text input" />
+  <div class="columns is-1 is-variable">
+    <div class="column content is-2">
+      <h1>Date</h1>
+      <input class="input" type="date" placeholder="Text input" />
     </div>
     <div class="column content">
-      <h1>Vendor</h1>
+      <h1>Entity</h1>
       <input class="input" type="text" placeholder="Text input" />
     </div>
-    <div class="column content is-1">
-      <h1>Cost</h1>
+    <div class="column content is-2">
+      <h1>Amount</h1>
       <input class="input" type="text" placeholder="Text input" />
     </div>
     <div class="column content">
@@ -24,5 +24,5 @@
 import { Component, Vue } from 'vue-property-decorator';
 
 @Component
-export default class ItemForm extends Vue {}
+export default class TransactionForm extends Vue {}
 </script>
