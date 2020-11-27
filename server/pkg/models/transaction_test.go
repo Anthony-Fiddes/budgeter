@@ -105,6 +105,41 @@ func TestRemoveTransaction(t *testing.T) {
 	}
 }
 
+func TestGetTransactions(t *testing.T) {
+	db := getMemDb(t)
+	defer db.Close()
+	testTX1 := Transaction{
+		Entity: "Barack",
+		Amount: 10,
+		Date:   2,
+	}
+	testTX2 := testTX1
+	testTX2.Date = 3
+	_, err := CreateTransactionTable(db)
+	if err != nil {
+		t.Fatalf("Error creating the transaction table: %s", err)
+	}
+	_, err = InsertTransaction(db, testTX1)
+	if err != nil {
+		t.Fatalf("Error inserting transaction into table: %s", err)
+	}
+	_, err = InsertTransaction(db, testTX2)
+	if err != nil {
+		t.Fatalf("Error inserting transaction into table: %s", err)
+	}
+
+	tt, err := GetTransactions(db, 10)
+
+	if len(tt) != 2 {
+		t.Fatal("Not enough transactions were returned.")
+	}
+	if tt[0].Date != testTX2.Date {
+		t.Error(
+			"The returned transactions were not returned in order from most recent to least",
+		)
+	}
+}
+
 func TestUpdateTransaction(t *testing.T) {
 	db := getMemDb(t)
 	defer db.Close()

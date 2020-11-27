@@ -19,7 +19,7 @@ type Transaction struct {
 	// In 1/100's of a cent
 	Amount int
 	// Unix Time
-	Date int
+	Date int64
 	Note string
 }
 
@@ -36,6 +36,33 @@ func CreateTransactionTable(db *sql.DB) (sql.Result, error) {
 			TransactionNoteCol,
 		),
 	)
+}
+
+// GetTransactions gets transactions from the transactions table. They are
+// ordered by their Date columns, so the most recent transactions will be
+// returned first. It will return at most "limit" results.
+func GetTransactions(db *sql.DB, limit int) ([]Transaction, error) {
+	rows, err := db.Query(
+		fmt.Sprintf(
+			"SELECT * FROM %s ORDER BY %s DESC LIMIT %d",
+			TransactionTableName,
+			TransactionDateCol,
+			limit,
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]Transaction, 0, limit)
+	for rows.Next() {
+		tx := Transaction{}
+		err := rows.Scan(&tx.Entity, &tx.Amount, &tx.Date, &tx.Note)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, tx)
+	}
+	return result, nil
 }
 
 // InsertTransaction inserts a transaction into the transactions table
