@@ -107,4 +107,5 @@ dist
 *.db
 
 # Executables
-server/cmd/budgeter/budgeter
+cmd/budgeter-server/budgeter-server
+cmd/budgeter/budgeter
