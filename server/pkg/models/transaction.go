@@ -69,3 +69,29 @@ func RemoveTransaction(db *sql.DB, tx Transaction) (sql.Result, error) {
 		tx.Note,
 	)
 }
+
+// UpdateTransaction updates a transaction from the transactions table
+func UpdateTransaction(db *sql.DB, old, new Transaction) (sql.Result, error) {
+	return db.Exec(
+		fmt.Sprintf(
+			"UPDATE %s SET %s=?, %s=? ,%s=?, %s=? WHERE %s=? AND %s=? AND %s=? AND %s=?",
+			TransactionTableName,
+			TransactionEntityCol,
+			TransactionAmountCol,
+			TransactionDateCol,
+			TransactionNoteCol,
+			TransactionEntityCol,
+			TransactionAmountCol,
+			TransactionDateCol,
+			TransactionNoteCol,
+		),
+		new.Entity,
+		new.Amount,
+		new.Date,
+		new.Note,
+		old.Entity,
+		old.Amount,
+		old.Date,
+		old.Note,
+	)
+}
