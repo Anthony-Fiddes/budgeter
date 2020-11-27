@@ -13,19 +13,19 @@ const (
 	sqlite3URI = ":memory:"
 )
 
-func getMemDb(t *testing.T) *sql.DB {
+func getMemDb(t *testing.T) *DB {
 	db, err := sql.Open(sqlite3, sqlite3URI)
 	if err != nil {
 		t.Fatalf("Error creating an in memory database for testing: %s", err)
 	}
-	return db
+	return &DB{db}
 }
 
 func TestCreateTransactionTable(t *testing.T) {
 	db := getMemDb(t)
 	defer db.Close()
 
-	_, err := CreateTransactionTable(db)
+	_, err := db.CreateTransactionTable()
 	if err != nil {
 		t.Fatalf("Error creating the transaction table: %s", err)
 	}
@@ -49,12 +49,12 @@ func TestInsertTransaction(t *testing.T) {
 		Amount: 10,
 	}
 	// ? Is there a way to remove this dependency? Is it fine as is?
-	_, err := CreateTransactionTable(db)
+	_, err := db.CreateTransactionTable()
 	if err != nil {
 		t.Fatalf("Error creating the transaction table: %s", err)
 	}
 
-	_, err = InsertTransaction(db, testTX)
+	_, err = db.InsertTransaction(testTX)
 	if err != nil {
 		t.Fatalf("Error inserting transaction into table: %s", err)
 	}
@@ -82,16 +82,16 @@ func TestRemoveTransaction(t *testing.T) {
 		Entity: "Barack",
 		Amount: 10,
 	}
-	_, err := CreateTransactionTable(db)
+	_, err := db.CreateTransactionTable()
 	if err != nil {
 		t.Fatalf("Error creating the transaction table: %s", err)
 	}
-	_, err = InsertTransaction(db, testTX)
+	_, err = db.InsertTransaction(testTX)
 	if err != nil {
 		t.Fatalf("Error inserting transaction into table: %s", err)
 	}
 
-	_, err = RemoveTransaction(db, testTX)
+	_, err = db.RemoveTransaction(testTX)
 	if err != nil {
 		t.Fatalf("Error removing transaction from table: %s", err)
 	}
@@ -115,20 +115,20 @@ func TestGetTransactions(t *testing.T) {
 	}
 	testTX2 := testTX1
 	testTX2.Date = 3
-	_, err := CreateTransactionTable(db)
+	_, err := db.CreateTransactionTable()
 	if err != nil {
 		t.Fatalf("Error creating the transaction table: %s", err)
 	}
-	_, err = InsertTransaction(db, testTX1)
+	_, err = db.InsertTransaction(testTX1)
 	if err != nil {
 		t.Fatalf("Error inserting transaction into table: %s", err)
 	}
-	_, err = InsertTransaction(db, testTX2)
+	_, err = db.InsertTransaction(testTX2)
 	if err != nil {
 		t.Fatalf("Error inserting transaction into table: %s", err)
 	}
 
-	tt, err := GetTransactions(db, 10)
+	tt, err := db.GetTransactions(10)
 
 	if len(tt) != 2 {
 		t.Fatal("Not enough transactions were returned.")
@@ -147,17 +147,17 @@ func TestUpdateTransaction(t *testing.T) {
 		Entity: "Barack",
 		Amount: 10,
 	}
-	_, err := CreateTransactionTable(db)
+	_, err := db.CreateTransactionTable()
 	if err != nil {
 		t.Fatalf("Error creating the transaction table: %s", err)
 	}
-	_, err = InsertTransaction(db, testTX)
+	_, err = db.InsertTransaction(testTX)
 	if err != nil {
 		t.Fatalf("Error inserting transaction into table: %s", err)
 	}
 
 	newTX := Transaction{Entity: "Obama", Amount: 20}
-	_, err = UpdateTransaction(db, testTX, newTX)
+	_, err = db.UpdateTransaction(testTX, newTX)
 	if err != nil {
 		t.Fatalf("Error updating transaction in table: %s", err)
 	}

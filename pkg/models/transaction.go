@@ -23,8 +23,13 @@ type Transaction struct {
 	Note string
 }
 
-// CreateTransactionTable creates the transaction table if it does not already exist.
-func CreateTransactionTable(db *sql.DB) (sql.Result, error) {
+// DB wraps *sql.DB to add methods for putting transactions in the transactions table
+type DB struct {
+	*sql.DB
+}
+
+// CreateTransactionTable creates the transactions table if it does not already exist.
+func (db *DB) CreateTransactionTable() (sql.Result, error) {
 	return db.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s "+
@@ -41,7 +46,7 @@ func CreateTransactionTable(db *sql.DB) (sql.Result, error) {
 // GetTransactions gets transactions from the transactions table. They are
 // ordered by their Date columns, so the most recent transactions will be
 // returned first. It will return at most "limit" results.
-func GetTransactions(db *sql.DB, limit int) ([]Transaction, error) {
+func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
 	rows, err := db.Query(
 		fmt.Sprintf(
 			"SELECT * FROM %s ORDER BY %s DESC LIMIT %d",
@@ -66,7 +71,7 @@ func GetTransactions(db *sql.DB, limit int) ([]Transaction, error) {
 }
 
 // InsertTransaction inserts a transaction into the transactions table
-func InsertTransaction(db *sql.DB, tx Transaction) (sql.Result, error) {
+func (db *DB) InsertTransaction(tx Transaction) (sql.Result, error) {
 	return db.Exec(
 		fmt.Sprintf(
 			"INSERT INTO %s VALUES (?, ?, ?, ?)",
@@ -80,7 +85,7 @@ func InsertTransaction(db *sql.DB, tx Transaction) (sql.Result, error) {
 }
 
 // RemoveTransaction removes a transaction from the transactions table
-func RemoveTransaction(db *sql.DB, tx Transaction) (sql.Result, error) {
+func (db *DB) RemoveTransaction(tx Transaction) (sql.Result, error) {
 	return db.Exec(
 		fmt.Sprintf(
 			"DELETE FROM %s WHERE %s=? AND %s=? AND %s=? AND %s=?",
@@ -98,7 +103,7 @@ func RemoveTransaction(db *sql.DB, tx Transaction) (sql.Result, error) {
 }
 
 // UpdateTransaction updates a transaction from the transactions table
-func UpdateTransaction(db *sql.DB, old, new Transaction) (sql.Result, error) {
+func (db *DB) UpdateTransaction(old, new Transaction) (sql.Result, error) {
 	return db.Exec(
 		fmt.Sprintf(
 			"UPDATE %s SET %s=?, %s=? ,%s=?, %s=? WHERE %s=? AND %s=? AND %s=? AND %s=?",
