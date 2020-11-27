@@ -48,7 +48,7 @@ func TestInsertTransaction(t *testing.T) {
 		Entity: "Barack",
 		Amount: 10,
 	}
-	// ? Is there a way to remove this dependency?
+	// ? Is there a way to remove this dependency? Is it fine as is?
 	_, err := CreateTransactionTable(db)
 	if err != nil {
 		t.Fatalf("Error creating the transaction table: %s", err)
@@ -69,5 +69,35 @@ func TestInsertTransaction(t *testing.T) {
 	result.Scan(&resultTX.Entity, &resultTX.Amount, &resultTX.Date, &resultTX.Note)
 	if resultTX.Entity != testTX.Entity || resultTX.Amount != testTX.Amount {
 		t.Fatalf("Expected to receive an entry like %v, instead received %v", testTX, resultTX)
+	}
+}
+
+func TestRemoveTransaction(t *testing.T) {
+	db := getMemDb(t)
+	defer db.Close()
+	testTX := Transaction{
+		Entity: "Barack",
+		Amount: 10,
+	}
+	_, err := CreateTransactionTable(db)
+	if err != nil {
+		t.Fatalf("Error creating the transaction table: %s", err)
+	}
+	_, err = InsertTransaction(db, testTX)
+	if err != nil {
+		t.Fatalf("Error inserting transaction into table: %s", err)
+	}
+
+	_, err = RemoveTransaction(db, testTX)
+	if err != nil {
+		t.Fatalf("Error removing transaction from table: %s", err)
+	}
+
+	query := fmt.Sprintf("SELECT * FROM %s", TransactionTableName)
+	result, err := db.Query(query)
+	if result.Next() {
+		t.Fatal(
+			"The table was supposed to be empty after removing its only transaction",
+		)
 	}
 }

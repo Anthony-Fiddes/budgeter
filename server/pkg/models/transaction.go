@@ -51,3 +51,21 @@ func InsertTransaction(db *sql.DB, tx Transaction) (sql.Result, error) {
 		tx.Note,
 	)
 }
+
+// RemoveTransaction removes a transaction from the transactions table
+func RemoveTransaction(db *sql.DB, tx Transaction) (sql.Result, error) {
+	return db.Exec(
+		fmt.Sprintf(
+			"DELETE FROM %s WHERE %s=? AND %s=? AND %s=? AND %s=?",
+			TransactionTableName,
+			TransactionEntityCol,
+			TransactionAmountCol,
+			TransactionDateCol,
+			TransactionNoteCol,
+		),
+		tx.Entity,
+		tx.Amount,
+		tx.Date,
+		tx.Note,
+	)
+}
