@@ -1,0 +1,5 @@
+Usage:
+    budgeter <command> [arguments]
+
+Commands:
+    ingest <file> [type]
