@@ -33,8 +33,13 @@ func (db *DB) CreateTransactionTable() (sql.Result, error) {
 	return db.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s "+
-				"(%s TEXT NOT NULL, %s INTEGER NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL)",
+				"(%s TEXT NOT NULL, %s INTEGER NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL, "+
+				"UNIQUE(%s,%s,%s,%s))",
 			TransactionTableName,
+			TransactionEntityCol,
+			TransactionAmountCol,
+			TransactionDateCol,
+			TransactionNoteCol,
 			TransactionEntityCol,
 			TransactionAmountCol,
 			TransactionDateCol,

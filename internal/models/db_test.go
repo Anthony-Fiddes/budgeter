@@ -59,6 +59,11 @@ func TestInsertTransaction(t *testing.T) {
 		t.Fatalf("error inserting transaction into table: %s", err)
 	}
 
+	_, err = db.InsertTransaction(testTX)
+	if err == nil {
+		t.Fatalf("error expected when inserting duplicate transactions: %s", err)
+	}
+
 	query := fmt.Sprintf("SELECT * FROM %s", TransactionTableName)
 	result, err := db.Query(query)
 	if err != nil {
