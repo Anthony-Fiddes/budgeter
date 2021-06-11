@@ -33,7 +33,7 @@ func TestCreateTransactionTable(t *testing.T) {
 }
 
 func TestInsertTransaction(t *testing.T) {
-	db, err := modelstest.GetMemDB()
+	db, err := modelstest.GetMemDBWithTable()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,11 +41,6 @@ func TestInsertTransaction(t *testing.T) {
 	testTX := models.Transaction{
 		Entity: "Barack",
 		Amount: 10,
-	}
-	// ? Is there a way to remove this dependency? Is it fine as is?
-	_, err = db.CreateTransactionTable()
-	if err != nil {
-		t.Fatalf("error creating the transaction table: %s", err)
 	}
 
 	_, err = db.InsertTransaction(testTX)
@@ -75,7 +70,7 @@ func TestInsertTransaction(t *testing.T) {
 }
 
 func TestRemoveTransaction(t *testing.T) {
-	db, err := modelstest.GetMemDB()
+	db, err := modelstest.GetMemDBWithTable()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,10 +78,6 @@ func TestRemoveTransaction(t *testing.T) {
 	testTX := models.Transaction{
 		Entity: "Barack",
 		Amount: 10,
-	}
-	_, err = db.CreateTransactionTable()
-	if err != nil {
-		t.Fatalf("error creating the transaction table: %s", err)
 	}
 	_, err = db.InsertTransaction(testTX)
 	if err != nil {
@@ -108,7 +99,7 @@ func TestRemoveTransaction(t *testing.T) {
 }
 
 func TestGetTransactions(t *testing.T) {
-	db, err := modelstest.GetMemDB()
+	db, err := modelstest.GetMemDBWithTable()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,10 +111,6 @@ func TestGetTransactions(t *testing.T) {
 	}
 	testTX2 := testTX1
 	testTX2.Date = 3
-	_, err = db.CreateTransactionTable()
-	if err != nil {
-		t.Fatalf("error creating the transaction table: %s", err)
-	}
 	_, err = db.InsertTransaction(testTX1)
 	if err != nil {
 		t.Fatalf("error inserting transaction into table: %s", err)
@@ -149,7 +136,7 @@ func TestGetTransactions(t *testing.T) {
 }
 
 func TestUpdateTransaction(t *testing.T) {
-	db, err := modelstest.GetMemDB()
+	db, err := modelstest.GetMemDBWithTable()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -157,10 +144,6 @@ func TestUpdateTransaction(t *testing.T) {
 	testTX := models.Transaction{
 		Entity: "Barack",
 		Amount: 10,
-	}
-	_, err = db.CreateTransactionTable()
-	if err != nil {
-		t.Fatalf("error creating the transaction table: %s", err)
 	}
 	_, err = db.InsertTransaction(testTX)
 	if err != nil {

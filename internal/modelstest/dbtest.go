@@ -18,3 +18,15 @@ func GetMemDB() (*models.DB, error) {
 	}
 	return &models.DB{DB: db}, nil
 }
+
+func GetMemDBWithTable() (*models.DB, error) {
+	db, err := GetMemDB()
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.CreateTransactionTable()
+	if err != nil {
+		return nil, fmt.Errorf("error creating the transaction table: %w", err)
+	}
+	return db, nil
+}
