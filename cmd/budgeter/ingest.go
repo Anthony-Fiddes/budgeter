@@ -26,6 +26,7 @@ const (
 //
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
+// TODO: write tests
 func ingest(db *models.DB, cmdArgs []string) error {
 	var err error
 	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
@@ -33,13 +34,22 @@ func ingest(db *models.DB, cmdArgs []string) error {
 	if err != nil {
 		return err
 	}
+
 	args := fs.Args()
+	if len(args) < 1 {
+		return errors.New("not enough arguments")
+	}
 
 	filePath := args[0]
 	fileType := filepath.Ext(filePath)
 	switch fileType {
 	case extCSV:
-		err = ingestCSV(filePath, db)
+		f, err := os.Open(filePath)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		err = ingestCSV(f, db)
 		if err != nil {
 			return err
 		}
@@ -52,14 +62,8 @@ func ingest(db *models.DB, cmdArgs []string) error {
 	return nil
 }
 
-func ingestCSV(filePath string, db *models.DB) error {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	cr := csv.NewReader(f)
+func ingestCSV(r io.Reader, db *models.DB) error {
+	cr := csv.NewReader(r)
 	cr.FieldsPerRecord = fieldsPerRecord
 	for {
 		row, err := cr.Read()
