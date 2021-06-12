@@ -48,9 +48,9 @@ func (db *DB) CreateTransactionTable() (sql.Result, error) {
 	)
 }
 
-// GetTransactions gets transactions from the transactions table. They are
-// ordered by their Date columns, so the most recent transactions will be
-// returned first. It will return at most "limit" results.
+// GetTransactions gets transactions from the transactions table. The
+// most recent transactions will be returned first. GetTransactions will
+//return at most "limit" results.
 func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
 	rows, err := db.Query(
 		fmt.Sprintf(
