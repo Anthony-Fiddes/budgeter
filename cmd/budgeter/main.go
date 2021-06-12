@@ -20,13 +20,20 @@ type command func(*models.DB, []string) error
 
 const dbName = "budgeter.db"
 
-func initDB() (*models.DB, error) {
+func getDBPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		home = "."
+		return ".", fmt.Errorf("error getting db path: %w", err)
 	}
-	dbPath := filepath.Join(home, dbName)
+	return filepath.Join(home, dbName), nil
+}
 
+func initDB() (*models.DB, error) {
+
+	dbPath, err := getDBPath()
+	if err != nil {
+		return nil, err
+	}
 	d, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, err
@@ -49,6 +56,7 @@ func printUsage() {
 func main() {
 	commands := map[string]command{
 		ingestName: ingest,
+		wipeName:   wipe,
 	}
 	if len(os.Args) < 2 {
 		printUsage()
