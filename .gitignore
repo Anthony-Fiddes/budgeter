@@ -105,6 +105,7 @@ dist
 
 # Data
 *.db
+*.csv
 
 # Executables
 cmd/budgeter-server/budgeter-server
