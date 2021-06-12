@@ -3,3 +3,4 @@ Usage:
 
 Commands:
     ingest <file> [type]
+    wipe
