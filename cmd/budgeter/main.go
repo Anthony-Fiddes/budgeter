@@ -57,6 +57,7 @@ func main() {
 	commands := map[string]command{
 		ingestName: ingest,
 		wipeName:   wipe,
+		recentName: recent,
 	}
 	if len(os.Args) < 2 {
 		printUsage()

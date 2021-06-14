@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 const (
@@ -11,6 +12,8 @@ const (
 	TransactionAmountCol = "Amount"
 	TransactionDateCol   = "Date"
 	TransactionNoteCol   = "Note"
+	// TODO: this should probably be configurable, but I currently only use dollars
+	Currency = '$'
 )
 
 // Transaction represents a single transaction in a person's budget
@@ -21,6 +24,29 @@ type Transaction struct {
 	// Unix Time
 	Date int64
 	Note string
+}
+
+// DateString returns the Transaction's date in M/D/YYYY format.
+// TODO: figure out why there is a 1 day discrepancy between the date
+// printed out by this function and the date listed in the CSV input.
+// NOTE: This is probably a problem with ingest
+func (t Transaction) DateString() string {
+	d := time.Unix(t.Date, 0)
+	date := d.Format("1/2/2006")
+	return date
+}
+
+func (t Transaction) AmountString() string {
+	amount := t.Amount
+	sign := " "
+	negative := t.Amount < 0
+	if negative {
+		amount *= -1
+		sign = "-"
+	}
+	dollars := amount / 100
+	cents := amount % 100
+	return fmt.Sprintf("%s%c%d.%02d", sign, Currency, dollars, cents)
 }
 
 // DB wraps *sql.DB to add methods for putting transactions in the transactions table
