@@ -90,9 +90,12 @@ func csvRowToTx(row []string) (models.Transaction, error) {
 		row[i] = strings.TrimSpace(row[i])
 	}
 
+	// TODO: figure out whether or not I want to handle weirdly formatted
+	// amounts. e.g. $5 instead of $5.00
 	amount := row[2]
 	amount = strings.Replace(amount, ".", "", 1)
-	amount = strings.Replace(amount, "$", "", 1)
+	amount = strings.Replace(amount, string(models.Currency), "", 1)
+	amount = strings.Replace(amount, ",", "", 1)
 	a, err := strconv.Atoi(amount)
 	if err != nil {
 		return models.Transaction{}, fmt.Errorf("error parsing the amount for a transaction: %w", err)
