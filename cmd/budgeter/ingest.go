@@ -101,7 +101,7 @@ func csvRowToTx(row []string) (models.Transaction, error) {
 		return models.Transaction{}, fmt.Errorf("error parsing the amount for a transaction: %w", err)
 	}
 	d := row[0]
-	date, err := time.Parse("1/2/2006", d)
+	date, err := time.Parse(models.DateLayout, d)
 	if err != nil {
 		return models.Transaction{}, fmt.Errorf("error parsing the date for a transaction: %w", err)
 	}

@@ -13,7 +13,8 @@ const (
 	TransactionDateCol   = "Date"
 	TransactionNoteCol   = "Note"
 	// TODO: this should probably be configurable, but I currently only use dollars
-	Currency = '$'
+	Currency   = '$'
+	DateLayout = "1/2/2006"
 )
 
 // Transaction represents a single transaction in a person's budget
@@ -29,7 +30,7 @@ type Transaction struct {
 // DateString returns the Transaction's date in M/D/YYYY format.
 func (t Transaction) DateString() string {
 	d := time.Unix(t.Date, 0).UTC()
-	date := d.Format("1/2/2006")
+	date := d.Format(DateLayout)
 	return date
 }
 
