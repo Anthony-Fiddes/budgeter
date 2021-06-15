@@ -27,11 +27,8 @@ type Transaction struct {
 }
 
 // DateString returns the Transaction's date in M/D/YYYY format.
-// TODO: figure out why there is a 1 day discrepancy between the date
-// printed out by this function and the date listed in the CSV input.
-// NOTE: This is probably a problem with ingest
 func (t Transaction) DateString() string {
-	d := time.Unix(t.Date, 0)
+	d := time.Unix(t.Date, 0).UTC()
 	date := d.Format("1/2/2006")
 	return date
 }
