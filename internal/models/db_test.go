@@ -39,7 +39,7 @@ func TestInsertTransaction(t *testing.T) {
 	}
 	defer db.Close()
 	testTX := models.Transaction{
-		Entity: "Barack",
+		Entity: "bleep",
 		Amount: 10,
 	}
 
@@ -76,7 +76,7 @@ func TestRemoveTransaction(t *testing.T) {
 	}
 	defer db.Close()
 	testTX := models.Transaction{
-		Entity: "Barack",
+		Entity: "bleep",
 		Amount: 10,
 	}
 	_, err = db.InsertTransaction(testTX)
@@ -105,7 +105,7 @@ func TestGetTransactions(t *testing.T) {
 	}
 	defer db.Close()
 	testTX1 := models.Transaction{
-		Entity: "Barack",
+		Entity: "bleep",
 		Amount: 10,
 		Date:   2,
 	}
@@ -142,7 +142,7 @@ func TestUpdateTransaction(t *testing.T) {
 	}
 	defer db.Close()
 	testTX := models.Transaction{
-		Entity: "Barack",
+		Entity: "bleep",
 		Amount: 10,
 	}
 	_, err = db.InsertTransaction(testTX)
@@ -166,5 +166,45 @@ func TestUpdateTransaction(t *testing.T) {
 	result.Scan(&resultTX.Entity, &resultTX.Amount, &resultTX.Date, &resultTX.Note)
 	if resultTX.Entity != newTX.Entity || resultTX.Amount != newTX.Amount {
 		t.Fatalf("expected to receive an entry like %v, instead received %v", newTX, resultTX)
+	}
+}
+
+func TestGetTotal(t *testing.T) {
+	db, err := modelstest.GetMemDBWithTable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	testTX1 := models.Transaction{
+		Entity: "bleep",
+		Amount: 10,
+	}
+	_, err = db.InsertTransaction(testTX1)
+	if err != nil {
+		t.Fatalf("error inserting transaction into table: %s", err)
+	}
+	total, err := db.Total()
+	if err != nil {
+		t.Fatalf("error getting table total: %s", err)
+	}
+	expected := testTX1.Amount
+	if expected != total {
+		t.Fatalf("expected a total of %d but got %d", expected, total)
+	}
+	testTX2 := models.Transaction{
+		Entity: "bloop",
+		Amount: 5,
+	}
+	_, err = db.InsertTransaction(testTX2)
+	if err != nil {
+		t.Fatalf("error inserting transaction into table: %s", err)
+	}
+	total, err = db.Total()
+	if err != nil {
+		t.Fatalf("error getting table total: %s", err)
+	}
+	expected = testTX1.Amount + testTX2.Amount
+	if expected != total {
+		t.Fatalf("expected a total of %d but got %d", expected, total)
 	}
 }

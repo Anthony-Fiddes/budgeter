@@ -34,10 +34,16 @@ func (t Transaction) DateString() string {
 	return date
 }
 
+// AmountString returns a string that represents the amount of the currency that
+//the Transaction was worth.
 func (t Transaction) AmountString() string {
-	amount := t.Amount
-	sign := " "
-	negative := t.Amount < 0
+	return Dollars(t.Amount)
+}
+
+// Dollars returns a string that represents the value of the currency given by "amount"
+func Dollars(amount int) string {
+	sign := ""
+	negative := amount < 0
 	if negative {
 		amount *= -1
 		sign = "-"
@@ -74,7 +80,7 @@ func (db *DB) CreateTransactionTable() (sql.Result, error) {
 
 // GetTransactions gets transactions from the transactions table. The
 // most recent transactions will be returned first. GetTransactions will
-//return at most "limit" results.
+// return at most "limit" results.
 func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
 	rows, err := db.Query(
 		fmt.Sprintf(
@@ -155,4 +161,22 @@ func (db *DB) UpdateTransaction(old, new Transaction) (sql.Result, error) {
 		old.Date,
 		old.Note,
 	)
+}
+
+// Total returns the total of all the transactions in the database
+// ? will this become slow over time?
+func (db *DB) Total() (int, error) {
+	row := db.QueryRow(
+		fmt.Sprintf(
+			"SELECT sum(%s) FROM %s",
+			TransactionAmountCol,
+			TransactionTableName,
+		),
+	)
+	var total int
+	err := row.Scan(&total)
+	if err != nil {
+		return 0, fmt.Errorf("models: error querying for total: %w", err)
+	}
+	return total, nil
 }
