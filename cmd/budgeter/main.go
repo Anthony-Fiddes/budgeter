@@ -29,7 +29,6 @@ func getDBPath() (string, error) {
 }
 
 func initDB() (*models.DB, error) {
-
 	dbPath, err := getDBPath()
 	if err != nil {
 		return nil, err
