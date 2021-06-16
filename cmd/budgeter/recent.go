@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/models"
 	"github.com/cheynewallace/tabby"
@@ -16,6 +17,7 @@ const (
 	entityHeader       = "Entity"
 	amountHeader       = "Amount"
 	noteHeader         = "Note"
+	totalTemplate      = "Total: %s"
 )
 
 func recent(db *models.DB, cmdArgs []string) error {
@@ -33,8 +35,24 @@ func recent(db *models.DB, cmdArgs []string) error {
 	table := tabby.New()
 	table.AddHeader(dateHeader, entityHeader, amountHeader, noteHeader)
 	for _, t := range transactions {
-		table.AddLine(t.DateString(), t.Entity, t.AmountString(), t.Note)
+		// Align all the amount cells
+		amount := t.AmountString()
+		if t.Amount >= 0 {
+			amount = " " + amount
+		}
+		table.AddLine(t.DateString(), t.Entity, amount, t.Note)
+	}
+	total, err := db.Total()
+	if err != nil {
+		return err
 	}
 	table.Print()
+	totalString := fmt.Sprintf(totalTemplate, models.Dollars(total))
+	for i := 0; i < len(totalString); i++ {
+		fmt.Print("=")
+	}
+	fmt.Println()
+	fmt.Print(totalString)
+	fmt.Println()
 	return nil
 }
