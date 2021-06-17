@@ -110,3 +110,5 @@ dist
 # Executables
 cmd/budgeter-server/budgeter-server
 cmd/budgeter/budgeter
+
+scripts/
