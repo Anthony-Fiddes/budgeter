@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -9,29 +9,30 @@ import (
 	"github.com/Anthony-Fiddes/budgeter/internal/models"
 )
 
-const wipeName = "wipe"
+const (
+	wipeName          = "wipe"
+	wipeCancelMessage = "No data deleted."
+)
 
 func wipe(db *models.DB, cmdArgs []string) error {
-	if len(cmdArgs) > 0 {
-		return fmt.Errorf("%s does not take any arguments", wipeName)
-	}
-	// ? should this loop?
-	fmt.Print("This will delete your budgeting information. Are you sure you want to continue? (y/[n]) ")
-	s := bufio.NewScanner(os.Stdin)
-	s.Scan()
-	err := s.Err()
+	var err error
+	fs := flag.NewFlagSet(wipeName, flag.ContinueOnError)
+	confirmed := fs.Bool("y", false, "Confirms that the user would like to wipe their budgeting information.")
+	err = fs.Parse(cmdArgs)
 	if err != nil {
 		return err
 	}
-	response := s.Text()
-	response = strings.TrimSpace(response)
-	response = strings.ToLower(response)
-	if response != "y" {
-		fmt.Println("No data deleted.")
-		return nil
+	if len(fs.Args()) > 0 {
+		fs.Usage()
+		return fmt.Errorf("%s does not take any arguments", wipeName)
 	}
+	if *confirmed {
+		return wipeDB(db)
+	}
+	return interactiveWipe(db)
+}
 
-	fmt.Println("Proceeding with deletion...")
+func wipeDB(db *models.DB) error {
 	db.Close()
 	dbPath, err := getDBPath()
 	if err != nil {
@@ -41,6 +42,24 @@ func wipe(db *models.DB, cmdArgs []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Done.")
+	fmt.Println("Done. All budgeting information deleted.")
 	return nil
+}
+
+func interactiveWipe(db *models.DB) error {
+	// ? should this loop?
+	fmt.Print("This will delete your budgeting information. Are you sure you want to continue? (y/[n]) ")
+	var response string
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		return err
+	}
+	response = strings.TrimSpace(response)
+	response = strings.ToLower(response)
+	if response != "y" {
+		fmt.Println(wipeCancelMessage)
+		return nil
+	}
+	fmt.Println("Proceeding with deletion...")
+	return wipeDB(db)
 }
