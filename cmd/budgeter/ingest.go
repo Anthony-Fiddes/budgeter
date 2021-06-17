@@ -59,6 +59,7 @@ func ingest(db *models.DB, cmdArgs []string) error {
 		return errors.New("unsupported file type")
 	}
 
+	fmt.Printf("Successfully ingested %s\n", filePath)
 	return nil
 }
 
