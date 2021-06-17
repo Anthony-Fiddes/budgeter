@@ -20,6 +20,7 @@ const (
 	totalTemplate      = "Total: %s"
 )
 
+// recent lists the most recently added transactions.
 func recent(db *models.DB, cmdArgs []string) error {
 	var err error
 	fs := flag.NewFlagSet(recentName, flag.ContinueOnError)
