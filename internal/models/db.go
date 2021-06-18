@@ -13,7 +13,6 @@ const (
 	TransactionDateCol   = "Date"
 	TransactionNoteCol   = "Note"
 	// TODO: this should probably be configurable, but I currently only use dollars
-	Currency   = '$'
 	DateLayout = "1/2/2006"
 )
 
@@ -38,19 +37,6 @@ func (t Transaction) DateString() string {
 //the Transaction was worth.
 func (t Transaction) AmountString() string {
 	return Dollars(t.Amount)
-}
-
-// Dollars returns a string that represents the value of the currency given by "amount"
-func Dollars(amount int) string {
-	sign := ""
-	negative := amount < 0
-	if negative {
-		amount *= -1
-		sign = "-"
-	}
-	dollars := amount / 100
-	cents := amount % 100
-	return fmt.Sprintf("%s%c%d.%02d", sign, Currency, dollars, cents)
 }
 
 // DB wraps *sql.DB to add methods for putting transactions in the transactions table
