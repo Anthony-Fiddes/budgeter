@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -93,13 +92,9 @@ func csvRowToTx(row []string) (models.Transaction, error) {
 
 	// TODO: figure out whether or not I want to handle weirdly formatted
 	// amounts. e.g. $5 instead of $5.00
-	a := row[2]
-	a = strings.Replace(a, ".", "", 1)
-	a = strings.Replace(a, string(models.Currency), "", 1)
-	a = strings.Replace(a, ",", "", 1)
-	amount, err := strconv.Atoi(a)
+	amount, err := models.Cents(row[2])
 	if err != nil {
-		return models.Transaction{}, fmt.Errorf("error parsing the amount for a transaction: %w", err)
+		return models.Transaction{}, fmt.Errorf("error parsing the currency to cents: %w", err)
 	}
 	d := row[0]
 	date, err := time.Parse(models.DateLayout, d)
