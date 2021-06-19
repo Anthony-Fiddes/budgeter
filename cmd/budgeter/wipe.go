@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Anthony-Fiddes/budgeter/internal/input"
 	"github.com/Anthony-Fiddes/budgeter/internal/models"
 )
 
@@ -38,8 +39,7 @@ func wipeDB(db *models.DB) error {
 	if err != nil {
 		return err
 	}
-	err = os.Remove(dbPath)
-	if err != nil {
+	if err := os.Remove(dbPath); err != nil {
 		return err
 	}
 	fmt.Println("Done. All budgeting information deleted.")
@@ -49,12 +49,10 @@ func wipeDB(db *models.DB) error {
 func interactiveWipe(db *models.DB) error {
 	// ? should this loop?
 	fmt.Print("This will delete your budgeting information. Are you sure you want to continue? (y/[n]) ")
-	var response string
-	_, err := fmt.Scanln(&response)
+	response, err := input.Line()
 	if err != nil {
 		return err
 	}
-	response = strings.TrimSpace(response)
 	response = strings.ToLower(response)
 	if response != "y" {
 		fmt.Println(wipeCancelMessage)
