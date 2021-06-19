@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/models"
 )
@@ -97,14 +96,14 @@ func csvRowToTx(row []string) (models.Transaction, error) {
 		return models.Transaction{}, fmt.Errorf("error parsing the currency to cents: %w", err)
 	}
 	d := row[0]
-	date, err := time.Parse(models.DateLayout, d)
+	date, err := models.Date(d)
 	if err != nil {
 		return models.Transaction{}, fmt.Errorf("error parsing the date for a transaction: %w", err)
 	}
 	tx := models.Transaction{
 		Entity: row[1],
 		Amount: amount,
-		Date:   date.Unix(),
+		Date:   date,
 		Note:   row[3],
 	}
 	return tx, err
