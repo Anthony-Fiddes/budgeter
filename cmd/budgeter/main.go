@@ -54,6 +54,7 @@ func printUsage() {
 
 func main() {
 	commands := map[string]command{
+		addName:    add,
 		ingestName: ingest,
 		wipeName:   wipe,
 		recentName: recent,
