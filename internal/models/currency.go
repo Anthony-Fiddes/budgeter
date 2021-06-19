@@ -29,7 +29,7 @@ func Cents(currency string) (int, error) {
 	currency = strings.Replace(currency, ",", "", 1)
 	amount, err := strconv.Atoi(currency)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("currency must be provided in [%c]X.XX format (commas are allowed)", Currency)
 	}
 	return amount, nil
 }
