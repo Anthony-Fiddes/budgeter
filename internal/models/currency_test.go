@@ -31,6 +31,26 @@ func TestCents(t *testing.T) {
 			input:    "500,000.00",
 			expected: 50000000,
 		},
+		{
+			input:    "-5",
+			expected: -500,
+		},
+		{
+			input:    "-5.00",
+			expected: -500,
+		},
+		{
+			input:    "-500",
+			expected: -50000,
+		},
+		{
+			input:    "-500,000",
+			expected: -50000000,
+		},
+		{
+			input:    "-500,000.00",
+			expected: -50000000,
+		},
 	}
 
 	for _, test := range tests {
