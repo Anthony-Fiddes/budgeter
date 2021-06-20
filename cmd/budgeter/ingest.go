@@ -89,8 +89,6 @@ func csvRowToTx(row []string) (models.Transaction, error) {
 		row[i] = strings.TrimSpace(row[i])
 	}
 
-	// TODO: figure out whether or not I want to handle weirdly formatted
-	// amounts. e.g. $5 instead of $5.00
 	amount, err := models.Cents(row[2])
 	if err != nil {
 		return models.Transaction{}, fmt.Errorf("error parsing the currency to cents: %w", err)

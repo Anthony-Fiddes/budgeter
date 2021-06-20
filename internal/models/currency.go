@@ -6,7 +6,17 @@ import (
 	"strings"
 )
 
-const Currency = '$'
+type Error string
+
+func (e Error) Error() string {
+	return string(e)
+}
+
+const (
+	Currency  = "$"
+	Point     = "."
+	Thousands = ","
+)
 
 // Dollars returns a string that represents the value of the currency given by "amount"
 func Dollars(amount int) string {
@@ -18,18 +28,32 @@ func Dollars(amount int) string {
 	}
 	dollars := amount / 100
 	cents := amount % 100
-	return fmt.Sprintf("%s%c%d.%02d", sign, Currency, dollars, cents)
+	// TODO: determine whether or not I want this to add in thousands separators
+	return fmt.Sprintf("%s%s%d.%02d", sign, Currency, dollars, cents)
 }
 
 // Cents takes a currency string formatted as [$]X.XX and returns the number of
 // cents that it represents
 func Cents(currency string) (int, error) {
-	currency = strings.Replace(currency, ".", "", 1)
-	currency = strings.Replace(currency, string(Currency), "", 1)
-	currency = strings.Replace(currency, ",", "", 1)
-	amount, err := strconv.Atoi(currency)
+	errCurrencyFmt := fmt.Errorf("currency must be provided in [%s]X%sXX format (\"%s\" is allowed)", Currency, Point, Thousands)
+	currency = strings.Replace(currency, Currency, "", 1)
+	currency = strings.Replace(currency, Thousands, "", 1)
+	c := strings.Split(currency, ".")
+	dollars, err := strconv.Atoi(c[0])
 	if err != nil {
-		return 0, fmt.Errorf("currency must be provided in [%c]X.XX format (commas are allowed)", Currency)
+		return 0, errCurrencyFmt
 	}
-	return amount, nil
+	cents := 0
+	if len(c) == 2 {
+		cents, err = strconv.Atoi(c[1])
+		if err != nil {
+			return 0, err
+		}
+		if dollars < 0 {
+			cents *= -1
+		}
+	} else if len(c) > 2 {
+		return 0, errCurrencyFmt
+	}
+	return dollars*100 + cents, nil
 }
