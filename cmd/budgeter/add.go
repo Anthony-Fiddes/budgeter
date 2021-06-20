@@ -32,15 +32,15 @@ func interactiveAdd() (models.Transaction, error) {
 	if err != nil {
 		return models.Transaction{}, err
 	}
+	tx.Entity, err = addField(models.TransactionEntityCol)
+	if err != nil {
+		return models.Transaction{}, err
+	}
 	amount, err := addField(models.TransactionAmountCol)
 	if err != nil {
 		return models.Transaction{}, err
 	}
 	tx.Amount, err = models.Cents(amount)
-	if err != nil {
-		return models.Transaction{}, err
-	}
-	tx.Entity, err = addField(models.TransactionEntityCol)
 	if err != nil {
 		return models.Transaction{}, err
 	}
