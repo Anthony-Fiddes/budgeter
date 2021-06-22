@@ -2,5 +2,7 @@ Usage:
     budgeter <command> [arguments]
 
 Commands:
+    add
+    recent
     ingest <file> [type]
     wipe

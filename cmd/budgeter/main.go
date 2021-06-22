@@ -16,7 +16,10 @@ import (
 //go:embed usage.txt
 var usage string
 
-type command func(*models.DB, []string) error
+type command struct {
+	Exec  func(*models.DB, []string) error
+	Usage string
+}
 
 const dbName = "budgeter.db"
 
@@ -47,20 +50,23 @@ func initDB() (*models.DB, error) {
 	return db, nil
 }
 
-func printUsage() {
+func stderr(usage string) {
 	fmt.Fprint(os.Stderr, usage)
-	os.Exit(1)
 }
 
 func main() {
+	// TODO: Add a backup command
+	// TODO: Add a query command
+	// TODO: Add a search command
 	commands := map[string]command{
-		addName:    add,
-		ingestName: ingest,
-		wipeName:   wipe,
-		recentName: recent,
+		addName:    {Exec: add},
+		ingestName: {Exec: ingest},
+		wipeName:   {Exec: wipe},
+		recentName: {Exec: recent, Usage: recentUsage},
 	}
 	if len(os.Args) < 2 {
-		printUsage()
+		stderr(usage)
+		os.Exit(1)
 	}
 	alias := os.Args[1]
 	args := os.Args[2:]
@@ -73,10 +79,12 @@ func main() {
 
 	cmd, ok := commands[alias]
 	if !ok {
-		printUsage()
+		stderr(usage)
+		os.Exit(1)
 	}
-	err = cmd(db, args)
+	err = cmd.Exec(db, args)
 	if err != nil {
-		log.Fatalf("%v: %v", alias, err)
+		log.Printf("%v: %v\n\n", alias, err)
+		stderr(cmd.Usage + "\n")
 	}
 }
