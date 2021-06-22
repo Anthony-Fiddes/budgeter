@@ -4,9 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/input"
+	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
 	"github.com/Anthony-Fiddes/budgeter/internal/models"
 )
 
@@ -49,13 +48,11 @@ func wipeDB(db *models.DB) error {
 func interactiveWipe(db *models.DB) error {
 	// ? should this loop?
 	fmt.Print("This will delete your budgeting information. Are you sure you want to continue? (y/[n]) ")
-	response, err := input.Line()
+	confirmed, err := inpt.Confirm()
 	if err != nil {
 		return err
 	}
-	response = strings.ToLower(response)
-	if response != "y" {
-		fmt.Println(wipeCancelMessage)
+	if !confirmed {
 		return nil
 	}
 	fmt.Println("Proceeding with deletion...")

@@ -1,4 +1,4 @@
-package input
+package inpt
 
 import (
 	"bufio"
@@ -22,4 +22,18 @@ func Line() (string, error) {
 	result := scanner.Text()
 	result = strings.TrimSpace(result)
 	return result, nil
+}
+
+// Confirm reads input from the user and returns true if it is "y" or false if
+// it is anything else.
+func Confirm() (bool, error) {
+	input, err := Line()
+	if err != nil {
+		return false, err
+	}
+	input = strings.ToLower(input)
+	if input != "y" {
+		return false, nil
+	}
+	return true, nil
 }

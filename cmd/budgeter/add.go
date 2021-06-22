@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/input"
+	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
 	"github.com/Anthony-Fiddes/budgeter/internal/models"
 )
 
@@ -13,7 +13,7 @@ const addName = "add"
 func interactiveAdd() (models.Transaction, error) {
 	addField := func(field string) (string, error) {
 		fmt.Printf("%s: ", field)
-		response, err := input.Line()
+		response, err := inpt.Line()
 		if err != nil {
 			return "", err
 		}
