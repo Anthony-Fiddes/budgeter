@@ -45,14 +45,15 @@ func recent(db *models.DB, cmdArgs []string) error {
 			return errors.New("count must be a number")
 		}
 	}
-	// TODO: Add option to specify how many entries to print out
 	transactions, err := db.GetTransactions(recentLimit)
 	if err != nil {
 		return err
 	}
 	table := tabby.New()
 	table.AddHeader(dateHeader, entityHeader, amountHeader, noteHeader)
-	for _, t := range transactions {
+	// Reverse the order to display the most recent transactions at the bottom
+	for i := len(transactions) - 1; i >= 0; i-- {
+		t := transactions[i]
 		// Align all the amount cells
 		amount := t.AmountString()
 		if t.Amount >= 0 {
