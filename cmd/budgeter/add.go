@@ -10,6 +10,7 @@ import (
 
 const addName = "add"
 
+// TODO: Find a way to handle duplicates gracefully
 func interactiveAdd() (models.Transaction, error) {
 	addField := func(field string) (string, error) {
 		fmt.Printf("%s: ", field)
@@ -22,7 +23,8 @@ func interactiveAdd() (models.Transaction, error) {
 
 	// TODO: make the date default to today
 	// TODO: perhaps implement a date picker? / start the next date where you
-	// left off with the last one
+	// left off with the last one / allow short dates like "21" or "6/21" that
+	// default to this month or year
 	tx := models.Transaction{}
 	date, err := addField(models.TransactionDateCol)
 	if err != nil {
@@ -60,12 +62,26 @@ func add(db *models.DB, cmdArgs []string) error {
 	}
 	args := fs.Args()
 	if len(args) == 0 {
-		tx, err := interactiveAdd()
-		if err != nil {
-			return err
-		}
-		if _, err := db.InsertTransaction(tx); err != nil {
-			return err
+		for {
+			tx, err := interactiveAdd()
+			if err != nil {
+				return err
+			}
+			if _, err := db.InsertTransaction(tx); err != nil {
+				return err
+			}
+
+			// TODO: Add context when adding transactions. e.g. making the last
+			// used date the new default?, enabling an undo command
+			fmt.Print("\nWould you like to add another transaction? ")
+			confirmed, err := inpt.Confirm()
+			fmt.Println()
+			if err != nil {
+				return err
+			}
+			if !confirmed {
+				break
+			}
 		}
 	}
 	// TODO: implement an option that parses from flags or from args
