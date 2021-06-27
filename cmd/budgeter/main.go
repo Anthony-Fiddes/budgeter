@@ -58,11 +58,15 @@ func main() {
 	// TODO: Add a backup command
 	// TODO: Add a query command
 	// TODO: Add a search command
+	// TODO: Add a remove command
+	// TODO: Add an edit command
+	// TODO: Consider adding a period command to search through a certain time period
 	commands := map[string]command{
 		addName:    {Exec: add},
 		ingestName: {Exec: ingest},
 		wipeName:   {Exec: wipe},
 		recentName: {Exec: recent, Usage: recentUsage},
+		backupName: {Exec: backup, Usage: backupUsage},
 	}
 	if len(os.Args) < 2 {
 		stderr(usage)
@@ -84,7 +88,10 @@ func main() {
 	}
 	err = cmd.Exec(db, args)
 	if err != nil {
-		log.Printf("%v: %v\n\n", alias, err)
-		stderr(cmd.Usage + "\n")
+		log.Printf("%v: %v\n", alias, err)
+		if cmd.Usage != "" {
+			stderr("\n")
+			stderr(cmd.Usage)
+		}
 	}
 }
