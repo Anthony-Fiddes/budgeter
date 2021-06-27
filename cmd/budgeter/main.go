@@ -55,7 +55,6 @@ func stderr(usage string) {
 }
 
 func main() {
-	// TODO: Add a backup command
 	// TODO: Add a query command
 	// TODO: Add a search command
 	// TODO: Add a remove command
@@ -63,10 +62,10 @@ func main() {
 	// TODO: Consider adding a period command to search through a certain time period
 	commands := map[string]command{
 		addName:    {Exec: add},
+		backupName: {Exec: backup, Usage: backupUsage},
 		ingestName: {Exec: ingest},
 		wipeName:   {Exec: wipe},
 		recentName: {Exec: recent, Usage: recentUsage},
-		backupName: {Exec: backup, Usage: backupUsage},
 	}
 	if len(os.Args) < 2 {
 		stderr(usage)
