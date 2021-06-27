@@ -1,7 +1,7 @@
 package models
 
 import (
-	"errors"
+	"fmt"
 	"time"
 )
 
@@ -10,7 +10,7 @@ import (
 func Date(date string) (int64, error) {
 	result, err := time.Parse(DateLayout, date)
 	if err != nil {
-		return 0, errors.New("date must be provided in M/D/YYYY format")
+		return 0, fmt.Errorf("date \"%s\" must be provided in M/D/YYYY format", date)
 	}
 	return result.Unix(), nil
 }

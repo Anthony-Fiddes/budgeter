@@ -35,25 +35,28 @@ func Dollars(amount int) string {
 // Cents takes a currency string formatted as [$]X.XX and returns the number of
 // cents that it represents
 func Cents(currency string) (int, error) {
-	errCurrencyFmt := fmt.Errorf("currency must be provided in [%s]X%sXX format (\"%s\" is allowed)", Currency, Point, Thousands)
+	currencyErr := func() error {
+		errCurrencyFmt := fmt.Sprintf("currency \"%%s\" must be provided in [%s]X%sXX format (\"%s\" is allowed)", Currency, Point, Thousands)
+		return fmt.Errorf(errCurrencyFmt, currency)
+	}
 	currency = strings.Replace(currency, Currency, "", 1)
 	currency = strings.Replace(currency, Thousands, "", 1)
 	c := strings.Split(currency, ".")
 	dollars, err := strconv.Atoi(c[0])
 	if err != nil {
-		return 0, errCurrencyFmt
+		return 0, currencyErr()
 	}
 	cents := 0
 	if len(c) == 2 {
 		cents, err = strconv.Atoi(c[1])
 		if err != nil {
-			return 0, err
+			return 0, currencyErr()
 		}
 		if dollars < 0 {
 			cents *= -1
 		}
 	} else if len(c) > 2 {
-		return 0, errCurrencyFmt
+		return 0, currencyErr()
 	}
 	return dollars*100 + cents, nil
 }

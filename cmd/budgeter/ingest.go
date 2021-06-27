@@ -25,6 +25,7 @@ const (
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
 // TODO: write tests
+// TODO: use a transaction so that all of the file is added or none of it is!
 func ingest(db *models.DB, cmdArgs []string) error {
 	var err error
 	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
@@ -91,12 +92,12 @@ func csvRowToTx(row []string) (models.Transaction, error) {
 
 	amount, err := models.Cents(row[2])
 	if err != nil {
-		return models.Transaction{}, fmt.Errorf("error parsing the currency to cents: %w", err)
+		return models.Transaction{}, err
 	}
 	d := row[0]
 	date, err := models.Date(d)
 	if err != nil {
-		return models.Transaction{}, fmt.Errorf("error parsing the date for a transaction: %w", err)
+		return models.Transaction{}, err
 	}
 	tx := models.Transaction{
 		Entity: row[1],
