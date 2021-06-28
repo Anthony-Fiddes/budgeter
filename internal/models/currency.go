@@ -13,6 +13,7 @@ func (e Error) Error() string {
 }
 
 const (
+	// TODO: this should probably be configurable, but I currently only use US dollars
 	Currency  = "$"
 	Point     = "."
 	Thousands = ","

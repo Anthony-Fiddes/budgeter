@@ -12,8 +12,7 @@ const (
 	TransactionAmountCol = "Amount"
 	TransactionDateCol   = "Date"
 	TransactionNoteCol   = "Note"
-	// TODO: this should probably be configurable, but I currently only use dollars
-	DateLayout = "1/2/2006"
+	DateLayout           = "1/2/2006"
 )
 
 // Transaction represents a single transaction in a person's budget
