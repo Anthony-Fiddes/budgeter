@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"strconv"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/models"
@@ -26,29 +27,48 @@ const (
 //go:embed recentUsage.txt
 var recentUsage string
 
+type recentFlags struct {
+	limit  int
+	search string
+}
+
 // recent lists the most recently added transactions.
 // TODO: Show SQLite IDs so that I can reference transactions?
 // otherwise maybe a hash?
-// TODO: Add a "pinned" feature/subcommand
+// TODO: Add a "pinned" feature/subcommand?
+// TODO: Add option to flip output
 func recent(db *models.DB, cmdArgs []string) error {
-	recentLimit := defaultRecentLimit
 	var err error
+	flags := recentFlags{}
 	fs := flag.NewFlagSet(recentName, flag.ContinueOnError)
-	err = fs.Parse(cmdArgs)
-	if err != nil {
+	fs.SetOutput(io.Discard)
+	fs.StringVar(&flags.search, "s", "", "")
+	if err := fs.Parse(cmdArgs); err != nil {
 		return err
 	}
 	args := fs.Args()
 	if len(args) == 1 {
-		recentLimit, err = strconv.Atoi(args[0])
+		flags.limit, err = strconv.Atoi(args[0])
 		if err != nil {
 			return errors.New("count must be a number")
 		}
+	} else {
+		flags.limit = defaultRecentLimit
 	}
-	transactions, err := db.GetTransactions(recentLimit)
-	if err != nil {
-		return err
+
+	var transactions []models.Transaction
+	if flags.search == "" {
+		transactions, err = db.GetTransactions(flags.limit)
+		if err != nil {
+			return err
+		}
+	} else {
+		transactions, err = db.Search(flags.search, flags.limit)
+		if err != nil {
+			return err
+		}
 	}
+
 	table := tabby.New()
 	table.AddHeader(dateHeader, entityHeader, amountHeader, noteHeader)
 	// Reverse the order to display the most recent transactions at the bottom
@@ -61,17 +81,20 @@ func recent(db *models.DB, cmdArgs []string) error {
 		}
 		table.AddLine(t.DateString(), t.Entity, amount, t.Note)
 	}
-	total, err := db.Total()
-	if err != nil {
-		return err
-	}
 	table.Print()
-	totalString := fmt.Sprintf(totalTemplate, models.Dollars(total))
-	for i := 0; i < len(totalString); i++ {
-		fmt.Print("=")
+
+	if flags.search == "" {
+		total, err := db.Total()
+		if err != nil {
+			return err
+		}
+		totalString := fmt.Sprintf(totalTemplate, models.Dollars(total))
+		for i := 0; i < len(totalString); i++ {
+			fmt.Print("=")
+		}
+		fmt.Println()
+		fmt.Print(totalString)
 	}
-	fmt.Println()
-	fmt.Print(totalString)
 	fmt.Println()
 	return nil
 }

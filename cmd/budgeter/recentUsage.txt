@@ -2,3 +2,7 @@ Recent displays your most recent transactions.
 
 Usage: recent [count]
     count is the number of transactions to be shown
+
+    -s string
+        Filters results so that only those including the given string are
+    shown.
