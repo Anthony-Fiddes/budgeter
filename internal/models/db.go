@@ -65,15 +65,46 @@ func (db *DB) CreateTransactionTable() (sql.Result, error) {
 
 // GetTransactions gets transactions from the transactions table. The
 // most recent transactions will be returned first. GetTransactions will
-// return at most "limit" results.
+// return, at most, "limit" results.
 func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
 	rows, err := db.Query(
 		fmt.Sprintf(
-			"SELECT * FROM %s ORDER BY %s DESC LIMIT %d",
+			"SELECT * FROM %s ORDER BY %s DESC LIMIT ?",
 			TransactionTableName,
 			TransactionDateCol,
-			limit,
 		),
+		limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]Transaction, 0, limit)
+	for rows.Next() {
+		tx := Transaction{}
+		err := rows.Scan(&tx.Entity, &tx.Amount, &tx.Date, &tx.Note)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, tx)
+	}
+	return result, nil
+}
+
+// Search returns the most recent transactions that include the given "query".
+// It returns, at most, "limit" transactions.
+func (db *DB) Search(query string, limit int) ([]Transaction, error) {
+	query = "%" + query + "%"
+	rows, err := db.Query(
+		fmt.Sprintf(
+			"SELECT * FROM %s WHERE %s LIKE ? OR %s LIKE ? ORDER BY %s DESC LIMIT ?",
+			TransactionTableName,
+			TransactionEntityCol,
+			TransactionNoteCol,
+			TransactionDateCol,
+		),
+		query,
+		query,
+		limit,
 	)
 	if err != nil {
 		return nil, err

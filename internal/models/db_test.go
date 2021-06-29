@@ -135,6 +135,52 @@ func TestGetTransactions(t *testing.T) {
 	}
 }
 
+func TestSearch(t *testing.T) {
+	db, err := modelstest.GetMemDBWithTable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	testTX1 := models.Transaction{
+		Entity: "bleep",
+		Amount: 10,
+		Date:   2,
+	}
+	testTX2 := testTX1
+	testTX2.Entity = "bloop"
+	testTX2.Date = 3
+	_, err = db.InsertTransaction(testTX1)
+	if err != nil {
+		t.Fatalf("error inserting transaction into table: %s", err)
+	}
+	_, err = db.InsertTransaction(testTX2)
+	if err != nil {
+		t.Fatalf("error inserting transaction into table: %s", err)
+	}
+
+	tt, err := db.Search("bl", 10)
+	if err != nil {
+		t.Fatalf("error getting transactions: %s", err)
+	}
+	if len(tt) != 2 {
+		t.Fatal("not enough transactions were returned.")
+	}
+	if tt[0].Date != testTX2.Date {
+		t.Error(
+			"the returned transactions were not returned in order from most recent to least",
+		)
+	}
+
+	tt, err = db.Search("bloo", 10)
+	if err != nil {
+		t.Fatalf("error getting transactions: %s", err)
+	}
+	if len(tt) != 1 {
+		t.Log(tt)
+		t.Fatal("not enough transactions were returned.")
+	}
+}
+
 func TestUpdateTransaction(t *testing.T) {
 	db, err := modelstest.GetMemDBWithTable()
 	if err != nil {
