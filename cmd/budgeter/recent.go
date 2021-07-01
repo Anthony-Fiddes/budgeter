@@ -30,6 +30,7 @@ var recentUsage string
 type recentFlags struct {
 	limit  int
 	search string
+	flip   bool
 }
 
 // recent lists the most recently added transactions.
@@ -43,6 +44,7 @@ func recent(db *models.DB, cmdArgs []string) error {
 	fs := flag.NewFlagSet(recentName, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	fs.StringVar(&flags.search, "s", "", "")
+	fs.BoolVar(&flags.flip, "f", false, "")
 	if err := fs.Parse(cmdArgs); err != nil {
 		return err
 	}
@@ -71,9 +73,12 @@ func recent(db *models.DB, cmdArgs []string) error {
 
 	table := tabby.New()
 	table.AddHeader(dateHeader, entityHeader, amountHeader, noteHeader)
-	// Reverse the order to display the most recent transactions at the bottom
-	for i := len(transactions) - 1; i >= 0; i-- {
-		t := transactions[i]
+	for i := 0; i < len(transactions); i++ {
+		index := i
+		if !flags.flip {
+			index = len(transactions) - 1 - index
+		}
+		t := transactions[index]
 		// Align all the amount cells
 		amount := t.AmountString()
 		if t.Amount >= 0 {
