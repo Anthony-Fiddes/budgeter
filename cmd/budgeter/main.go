@@ -55,10 +55,9 @@ func stderr(usage string) {
 }
 
 func main() {
+	// TODO: Add an export command
+	// TODO: Add a remove/edit command
 	// TODO: Add a query command
-	// TODO: Add a search command
-	// TODO: Add a remove command
-	// TODO: Add an edit command
 	// TODO: Consider adding a period command to search through a certain time period
 	commands := map[string]command{
 		addName:    {Exec: add},
