@@ -37,7 +37,6 @@ type recentFlags struct {
 // TODO: Show SQLite IDs so that I can reference transactions?
 // otherwise maybe a hash?
 // TODO: Add a "pinned" feature/subcommand?
-// TODO: Add option to flip output
 func recent(db *models.DB, cmdArgs []string) error {
 	var err error
 	flags := recentFlags{}
