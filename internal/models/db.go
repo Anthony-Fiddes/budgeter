@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -63,10 +64,49 @@ func (db *DB) CreateTransactionTable() (sql.Result, error) {
 	)
 }
 
-// GetTransactions gets transactions from the transactions table. The
-// most recent transactions will be returned first. GetTransactions will
-// return, at most, "limit" results.
+// TransactionRows wraps *sql.Rows to easily scan Transactions from a DB
+type TransactionRows struct {
+	*sql.Rows
+}
+
+func (tr *TransactionRows) Scan() (Transaction, error) {
+	tx := Transaction{}
+	err := tr.Rows.Scan(&tx.Entity, &tx.Amount, &tx.Date, &tx.Note)
+	if err != nil {
+		return Transaction{}, err
+	}
+	return tx, err
+}
+
+// GetTransactions wraps GetTransactionRows to return a slice of Transactions. It
+// cannot be used with a negative "limit".
 func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
+	if limit < 1 {
+		return nil, errors.New("cannot use a negative limit")
+	}
+	txRows, err := db.GetTransactionRows(limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]Transaction, 0, limit)
+	for txRows.Next() {
+		tx, err := txRows.Scan()
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, tx)
+	}
+	if err := txRows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// GetTransactionRows gets transactions from the transactions table. The
+// most recent transactions will be returned first. GetTransactions will
+// return, at most, "limit" results. A negative number can be passed to indicate
+// that all possible results should be returned.
+func (db *DB) GetTransactionRows(limit int) (*TransactionRows, error) {
 	rows, err := db.Query(
 		fmt.Sprintf(
 			"SELECT * FROM %s ORDER BY %s DESC LIMIT ?",
@@ -78,16 +118,7 @@ func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	result := make([]Transaction, 0, limit)
-	for rows.Next() {
-		tx := Transaction{}
-		err := rows.Scan(&tx.Entity, &tx.Amount, &tx.Date, &tx.Note)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, tx)
-	}
-	return result, nil
+	return &TransactionRows{Rows: rows}, nil
 }
 
 // Search returns the most recent transactions that include the given "query".
@@ -192,7 +223,7 @@ func (db *DB) Total() (int, error) {
 	var total int
 	err := row.Scan(&total)
 	if err != nil {
-		return 0, fmt.Errorf("models: error querying for total: %w", err)
+		return 0, fmt.Errorf("error querying for total: %w", err)
 	}
 	return total, nil
 }
