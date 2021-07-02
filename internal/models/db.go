@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 )
@@ -46,7 +45,7 @@ type DB struct {
 
 // CreateTransactionTable creates the transactions table if it does not already exist.
 func (db *DB) CreateTransactionTable() (sql.Result, error) {
-	return db.Exec(
+	result, err := db.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s "+
 				"(%s TEXT NOT NULL, %s INTEGER NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL, "+
@@ -62,6 +61,12 @@ func (db *DB) CreateTransactionTable() (sql.Result, error) {
 			TransactionNoteCol,
 		),
 	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"cannot create %v table: %w", TransactionTableName, err,
+		)
+	}
+	return result, err
 }
 
 // TransactionRows wraps *sql.Rows to easily scan Transactions from a DB
@@ -78,28 +83,40 @@ func (tr *TransactionRows) Scan() (Transaction, error) {
 	return tx, err
 }
 
-// GetTransactions wraps GetTransactionRows to return a slice of Transactions. It
-// cannot be used with a negative "limit".
-func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
-	if limit < 1 {
-		return nil, errors.New("cannot use a negative limit")
-	}
-	txRows, err := db.GetTransactionRows(limit)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]Transaction, 0, limit)
-	for txRows.Next() {
-		tx, err := txRows.Scan()
+func (tr *TransactionRows) scanSet() ([]Transaction, error) {
+	var result []Transaction
+	for tr.Next() {
+		tx, err := tr.Scan()
 		if err != nil {
 			return nil, err
 		}
 		result = append(result, tx)
 	}
-	if err := txRows.Err(); err != nil {
+	if err := tr.Err(); err != nil {
+		return nil, fmt.Errorf("failed to read all transactions: %w", err)
+	}
+	return result, nil
+}
+
+// GetTransactions wraps GetTransactionRows to return a slice of Transactions. It
+// cannot be used with a negative "limit".
+func (db *DB) GetTransactions(limit int) ([]Transaction, error) {
+	if limit < 1 {
+		return nil, fmt.Errorf("cannot use negative limit %d", limit)
+	}
+	txRows, err := db.GetTransactionRows(limit)
+	if err != nil {
+		return nil, err
+	}
+	result, err := txRows.scanSet()
+	if err != nil {
 		return nil, err
 	}
 	return result, nil
+}
+
+func queryError(e error) error {
+	return fmt.Errorf("could not query database: %w", e)
 }
 
 // GetTransactionRows gets transactions from the transactions table. The
@@ -116,7 +133,7 @@ func (db *DB) GetTransactionRows(limit int) (*TransactionRows, error) {
 		limit,
 	)
 	if err != nil {
-		return nil, err
+		return nil, queryError(err)
 	}
 	return &TransactionRows{Rows: rows}, nil
 }
@@ -138,16 +155,12 @@ func (db *DB) Search(query string, limit int) ([]Transaction, error) {
 		limit,
 	)
 	if err != nil {
-		return nil, err
+		return nil, queryError(err)
 	}
-	result := make([]Transaction, 0, limit)
-	for rows.Next() {
-		tx := Transaction{}
-		err := rows.Scan(&tx.Entity, &tx.Amount, &tx.Date, &tx.Note)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, tx)
+	txRows := TransactionRows{Rows: rows}
+	result, err := txRows.scanSet()
+	if err != nil {
+		return nil, err
 	}
 	return result, nil
 }
@@ -223,7 +236,7 @@ func (db *DB) Total() (int, error) {
 	var total int
 	err := row.Scan(&total)
 	if err != nil {
-		return 0, fmt.Errorf("error querying for total: %w", err)
+		return 0, fmt.Errorf("could not query database for total: %w", err)
 	}
 	return total, nil
 }
