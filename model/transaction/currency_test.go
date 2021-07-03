@@ -1,9 +1,9 @@
-package models_test
+package transaction_test
 
 import (
 	"testing"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/models"
+	"github.com/Anthony-Fiddes/budgeter/internal/model/transaction"
 )
 
 func TestCents(t *testing.T) {
@@ -55,7 +55,7 @@ func TestCents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			result, err := models.Cents(test.input)
+			result, err := transaction.Cents(test.input)
 			if err != nil {
 				t.Fatalf("err: %s\ntest: %+v", err, test)
 			}

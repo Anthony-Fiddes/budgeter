@@ -1,23 +1,57 @@
-package models
+package transaction
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
-type Error string
-
-func (e Error) Error() string {
-	return string(e)
-}
-
 const (
+	TableName  = "transactions"
+	EntityCol  = "Entity"
+	AmountCol  = "Amount"
+	DateCol    = "Date"
+	NoteCol    = "Note"
+	DateLayout = "1/2/2006"
 	// TODO: this should probably be configurable, but I currently only use US dollars
 	Currency  = "$"
 	Point     = "."
 	Thousands = ","
 )
+
+// Transaction represents a single transaction in a person's budget
+type Transaction struct {
+	Entity string
+	// In 1/100's of a cent
+	Amount int
+	// Unix Time
+	Date int64
+	Note string
+}
+
+// DateString returns the Transaction's date in M/D/YYYY format.
+func (t Transaction) DateString() string {
+	d := time.Unix(t.Date, 0).UTC()
+	date := d.Format(DateLayout)
+	return date
+}
+
+// AmountString returns a string that represents the amount of the currency that
+//the Transaction was worth.
+func (t Transaction) AmountString() string {
+	return Dollars(t.Amount)
+}
+
+// Date converts a string of format M/D/YYYY and converts it to the appropriate
+// Unix time. This function is useful for working with the "Transaction" type.
+func Date(date string) (int64, error) {
+	result, err := time.Parse(DateLayout, date)
+	if err != nil {
+		return 0, fmt.Errorf("date \"%s\" must be provided in M/D/YYYY format", date)
+	}
+	return result.Unix(), nil
+}
 
 // Dollars returns a string that represents the value of the currency given by "amount"
 func Dollars(amount int) string {
