@@ -9,7 +9,7 @@ import (
 type Table struct{ DB *sql.DB }
 
 // Init creates the transactions table if it doesn't exist.
-func (t Table) Init() error {
+func (t *Table) Init() error {
 	_, err := t.DB.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s "+
@@ -42,7 +42,7 @@ func queryError(e error) error {
 // It returns, at most, "limit" transactions, and returns more recent
 // transactions first. A negative "limit" will return as many
 // transactions as are available.
-func (t Table) Search(query string, limit int) (*Rows, error) {
+func (t *Table) Search(query string, limit int) (*Rows, error) {
 	query = "%" + query + "%"
 	rows, err := t.DB.Query(
 		fmt.Sprintf(
@@ -63,7 +63,7 @@ func (t Table) Search(query string, limit int) (*Rows, error) {
 }
 
 // Insert inserts a transaction into the transactions table
-func (t Table) Insert(tx Transaction) error {
+func (t *Table) Insert(tx Transaction) error {
 	_, err := t.DB.Exec(
 		fmt.Sprintf(
 			"INSERT INTO %s VALUES (?, ?, ?, ?)",
@@ -82,7 +82,7 @@ func (t Table) Insert(tx Transaction) error {
 
 // Total returns the total of all the transactions in the database
 // ? will this become slow over time?
-func (t Table) Total() (int, error) {
+func (t *Table) Total() (int, error) {
 	row := t.DB.QueryRow(
 		fmt.Sprintf(
 			"SELECT sum(%s) FROM %s",
