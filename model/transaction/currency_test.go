@@ -3,7 +3,7 @@ package transaction_test
 import (
 	"testing"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/model/transaction"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
 func TestCents(t *testing.T) {
