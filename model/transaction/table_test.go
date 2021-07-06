@@ -10,8 +10,8 @@ import (
 )
 
 func getMemTable() (*transaction.Table, error) {
-	const sqlite3URI = ":memory:"
-	db, err := sql.Open("sqlite3", sqlite3URI)
+	const URI = ":memory:"
+	db, err := sql.Open("sqlite3", URI)
 	if err != nil {
 		return nil, fmt.Errorf("error creating an in-memory database for testing: %w", err)
 	}
@@ -29,6 +29,7 @@ func TestTable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer table.Close()
 
 	testData := []transaction.Transaction{
 		// Test data graciously provided by Sarah Werum
@@ -69,13 +70,50 @@ func TestTable(t *testing.T) {
 	for _, tx := range testData {
 		err := table.Insert(tx)
 		if err != nil {
+			t.Log(err)
 			t.Fatalf("could not insert %+v into table", tx)
 		}
 
 		err = table.Insert(tx)
 		if err == nil {
-			const reason = "table is expected to error when inserting a transaction that already exists in the table"
-			t.Fatal(reason)
+			t.Fatal("table is expected to error when inserting a transaction that already exists in the table")
+		}
+	}
+
+	// Search Test
+	for _, tx := range testData {
+		rows, err := table.Search(tx.Entity, 1)
+		if err != nil {
+			t.Logf("transaction: %+v", tx)
+			t.Fatalf(`Search failed: %v`, err)
+		}
+
+		rows.Next()
+		result, err := rows.Scan()
+		if err != nil || result != tx {
+			t.Log(err)
+			t.Fatalf(
+				`Search %s did not return %+v but %+v`,
+				tx.Entity, tx, result,
+			)
+		}
+		if rows.Next() {
+			t.Log("Rows.Next should be false after one call")
+		}
+	}
+
+	// Total Test
+	{
+		sum := 0
+		for _, tx := range testData {
+			sum += tx.Amount
+		}
+		result, err := table.Total()
+		if err != nil {
+			t.Error(err)
+		}
+		if result != sum {
+			t.Errorf("Total did not return %d but %d", sum, result)
 		}
 	}
 }

@@ -31,7 +31,7 @@ func (t *Table) Init() error {
 			"transaction: cannot create table: %w", err,
 		)
 	}
-	return err
+	return nil
 }
 
 func queryError(e error) error {
@@ -96,6 +96,10 @@ func (t *Table) Total() (int, error) {
 		return 0, fmt.Errorf("could not query database for total: %w", err)
 	}
 	return total, nil
+}
+
+func (t *Table) Close() error {
+	return t.DB.Close()
 }
 
 // Rows wraps *sql.Rows to easily scan Transactions from a DB
