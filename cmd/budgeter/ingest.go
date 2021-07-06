@@ -62,6 +62,7 @@ func ingest(table *transaction.Table, cmdArgs []string) error {
 	return nil
 }
 
+// TODO: Inserter and ingestCSV should be refactored out to a package with tests
 type Inserter interface {
 	Insert(transaction.Transaction) error
 }
