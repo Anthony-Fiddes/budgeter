@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
-	"github.com/Anthony-Fiddes/budgeter/internal/models"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
 const (
@@ -13,7 +13,7 @@ const (
 )
 
 // TODO: Find a way to handle duplicates gracefully
-func interactiveAdd(db *models.DB) error {
+func interactiveAdd(table *transaction.Table) error {
 	getField := func(field string) (string, error) {
 		fmt.Printf("%s: ", field)
 		response, err := inpt.Line()
@@ -27,31 +27,31 @@ func interactiveAdd(db *models.DB) error {
 	// TODO: perhaps implement a date picker? / start the next date where you
 	// left off with the last one / allow short dates like "21" or "6/21" that
 	// default to this month or year
-	getTransaction := func() (models.Transaction, error) {
-		tx := models.Transaction{}
-		date, err := getField(models.TransactionDateCol)
+	getTransaction := func() (transaction.Transaction, error) {
+		tx := transaction.Transaction{}
+		date, err := getField(transaction.DateCol)
 		if err != nil {
-			return models.Transaction{}, err
+			return transaction.Transaction{}, err
 		}
-		tx.Date, err = models.Date(date)
+		tx.Date, err = transaction.Date(date)
 		if err != nil {
-			return models.Transaction{}, err
+			return transaction.Transaction{}, err
 		}
-		tx.Entity, err = getField(models.TransactionEntityCol)
+		tx.Entity, err = getField(transaction.EntityCol)
 		if err != nil {
-			return models.Transaction{}, err
+			return transaction.Transaction{}, err
 		}
-		amount, err := getField(models.TransactionAmountCol)
+		amount, err := getField(transaction.AmountCol)
 		if err != nil {
-			return models.Transaction{}, err
+			return transaction.Transaction{}, err
 		}
-		tx.Amount, err = models.Cents(amount)
+		tx.Amount, err = transaction.Cents(amount)
 		if err != nil {
-			return models.Transaction{}, err
+			return transaction.Transaction{}, err
 		}
-		tx.Note, err = getField(models.TransactionNoteCol)
+		tx.Note, err = getField(transaction.NoteCol)
 		if err != nil {
-			return models.Transaction{}, err
+			return transaction.Transaction{}, err
 		}
 		return tx, nil
 	}
@@ -61,7 +61,7 @@ func interactiveAdd(db *models.DB) error {
 		if err != nil {
 			return err
 		}
-		if _, err := db.InsertTransaction(tx); err != nil {
+		if err := table.Insert(tx); err != nil {
 			return err
 		}
 
@@ -83,14 +83,14 @@ func interactiveAdd(db *models.DB) error {
 	return nil
 }
 
-func add(db *models.DB, cmdArgs []string) error {
+func add(table *transaction.Table, cmdArgs []string) error {
 	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
 	if err := fs.Parse(cmdArgs); err != nil {
 		return err
 	}
 	args := fs.Args()
 	if len(args) == 0 {
-		return interactiveAdd(db)
+		return interactiveAdd(table)
 	} else if len(args) > fieldsPerRecord {
 		return fmt.Errorf("%s takes at most %d arguments", addName, fieldsPerRecord)
 	}

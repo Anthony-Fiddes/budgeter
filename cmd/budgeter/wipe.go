@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
-	"github.com/Anthony-Fiddes/budgeter/internal/models"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
 const (
@@ -14,11 +14,11 @@ const (
 	wipeCancelMessage = "No data deleted."
 )
 
-func wipe(db *models.DB, cmdArgs []string) error {
-	var err error
+func wipe(table *transaction.Table, cmdArgs []string) error {
 	fs := flag.NewFlagSet(wipeName, flag.ContinueOnError)
+	table.DB.Close()
 	confirmed := fs.Bool("y", false, "Confirms that the user would like to wipe their budgeting information.")
-	err = fs.Parse(cmdArgs)
+	err := fs.Parse(cmdArgs)
 	if err != nil {
 		return err
 	}
@@ -27,13 +27,12 @@ func wipe(db *models.DB, cmdArgs []string) error {
 		return fmt.Errorf("%s does not take any arguments", wipeName)
 	}
 	if *confirmed {
-		return wipeDB(db)
+		return wipeDB()
 	}
-	return interactiveWipe(db)
+	return interactiveWipe()
 }
 
-func wipeDB(db *models.DB) error {
-	db.Close()
+func wipeDB() error {
 	dbPath, err := getDBPath()
 	if err != nil {
 		return err
@@ -45,7 +44,7 @@ func wipeDB(db *models.DB) error {
 	return nil
 }
 
-func interactiveWipe(db *models.DB) error {
+func interactiveWipe() error {
 	// ? should this loop?
 	fmt.Print("This will delete your budgeting information. Are you sure you want to continue? (y/[n]) ")
 	confirmed, err := inpt.Confirm()
@@ -56,5 +55,5 @@ func interactiveWipe(db *models.DB) error {
 		return nil
 	}
 	fmt.Println("Proceeding with deletion...")
-	return wipeDB(db)
+	return wipeDB()
 }

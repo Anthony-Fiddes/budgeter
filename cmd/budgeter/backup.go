@@ -7,7 +7,7 @@ import (
 
 	_ "embed"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/models"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
 const backupName = "backup"
@@ -15,11 +15,11 @@ const backupName = "backup"
 //go:embed backupUsage.txt
 var backupUsage string
 
-func backup(db *models.DB, cmdArgs []string) error {
+func backup(table *transaction.Table, cmdArgs []string) error {
 	if len(cmdArgs) != 1 {
 		return fmt.Errorf("%s only takes one argument", backupName)
 	}
-	db.Close()
+	table.DB.Close()
 	dbPath, err := getDBPath()
 	if err != nil {
 		return err

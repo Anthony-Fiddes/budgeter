@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/models"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
 const (
@@ -26,7 +26,7 @@ const (
 // only supports csv.
 // TODO: write tests
 // TODO: use a transaction so that all of the file is added or none of it is!
-func ingest(db *models.DB, cmdArgs []string) error {
+func ingest(table *transaction.Table, cmdArgs []string) error {
 	var err error
 	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
 	err = fs.Parse(cmdArgs)
@@ -48,7 +48,7 @@ func ingest(db *models.DB, cmdArgs []string) error {
 			return err
 		}
 		defer f.Close()
-		err = ingestCSV(f, db)
+		err = ingestCSV(f, table)
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,11 @@ func ingest(db *models.DB, cmdArgs []string) error {
 	return nil
 }
 
-func ingestCSV(r io.Reader, db *models.DB) error {
+type Inserter interface {
+	Insert(transaction.Transaction) error
+}
+
+func ingestCSV(r io.Reader, in Inserter) error {
 	cr := csv.NewReader(r)
 	cr.FieldsPerRecord = fieldsPerRecord
 	for {
@@ -74,7 +78,7 @@ func ingestCSV(r io.Reader, db *models.DB) error {
 		if err != nil {
 			return err
 		}
-		_, err = db.InsertTransaction(tx)
+		err = in.Insert(tx)
 		if err != nil {
 			return err
 		}
@@ -82,24 +86,24 @@ func ingestCSV(r io.Reader, db *models.DB) error {
 	return nil
 }
 
-func csvRowToTx(row []string) (models.Transaction, error) {
+func csvRowToTx(row []string) (transaction.Transaction, error) {
 	if len(row) < 4 {
-		return models.Transaction{}, errors.New(`not enough columns in input`)
+		return transaction.Transaction{}, errors.New(`not enough columns in input`)
 	}
 	for i := range row {
 		row[i] = strings.TrimSpace(row[i])
 	}
 
-	amount, err := models.Cents(row[2])
+	amount, err := transaction.Cents(row[2])
 	if err != nil {
-		return models.Transaction{}, err
+		return transaction.Transaction{}, err
 	}
 	d := row[0]
-	date, err := models.Date(d)
+	date, err := transaction.Date(d)
 	if err != nil {
-		return models.Transaction{}, err
+		return transaction.Transaction{}, err
 	}
-	tx := models.Transaction{
+	tx := transaction.Transaction{
 		Entity: row[1],
 		Amount: amount,
 		Date:   date,

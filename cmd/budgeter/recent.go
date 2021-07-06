@@ -8,7 +8,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/models"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 	"github.com/cheynewallace/tabby"
 )
 
@@ -37,7 +37,7 @@ type recentFlags struct {
 // TODO: Show SQLite IDs so that I can reference transactions?
 // otherwise maybe a hash?
 // TODO: Add a "pinned" feature/subcommand?
-func recent(db *models.DB, cmdArgs []string) error {
+func recent(table *transaction.Table, cmdArgs []string) error {
 	var err error
 	flags := recentFlags{}
 	fs := flag.NewFlagSet(recentName, flag.ContinueOnError)
@@ -57,42 +57,38 @@ func recent(db *models.DB, cmdArgs []string) error {
 		flags.limit = defaultRecentLimit
 	}
 
-	var transactions []models.Transaction
-	if flags.search == "" {
-		transactions, err = db.GetTransactions(flags.limit)
-		if err != nil {
-			return err
-		}
-	} else {
-		transactions, err = db.Search(flags.search, flags.limit)
-		if err != nil {
-			return err
-		}
+	rows, err := table.Search(flags.search, flags.limit)
+	if err != nil {
+		return err
+	}
+	transactions, err := rows.ScanSet(flags.limit)
+	if err != nil {
+		return err
 	}
 
-	table := tabby.New()
-	table.AddHeader(dateHeader, entityHeader, amountHeader, noteHeader)
+	tab := tabby.New()
+	tab.AddHeader(dateHeader, entityHeader, amountHeader, noteHeader)
 	for i := 0; i < len(transactions); i++ {
 		index := i
 		if !flags.flip {
 			index = len(transactions) - 1 - index
 		}
-		t := transactions[index]
+		tx := transactions[index]
 		// Align all the amount cells
-		amount := t.AmountString()
-		if t.Amount >= 0 {
+		amount := tx.AmountString()
+		if tx.Amount >= 0 {
 			amount = " " + amount
 		}
-		table.AddLine(t.DateString(), t.Entity, amount, t.Note)
+		tab.AddLine(tx.DateString(), tx.Entity, amount, tx.Note)
 	}
-	table.Print()
+	tab.Print()
 
 	if flags.search == "" {
-		total, err := db.Total()
+		total, err := table.Total()
 		if err != nil {
 			return err
 		}
-		totalString := fmt.Sprintf(totalTemplate, models.Dollars(total))
+		totalString := fmt.Sprintf(totalTemplate, transaction.Dollars(total))
 		for i := 0; i < len(totalString); i++ {
 			fmt.Print("=")
 		}

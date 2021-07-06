@@ -9,7 +9,7 @@ import (
 
 	_ "embed"
 
-	"github.com/Anthony-Fiddes/budgeter/internal/models"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -17,7 +17,7 @@ import (
 var usage string
 
 type command struct {
-	Exec  func(*models.DB, []string) error
+	Exec  func(*transaction.Table, []string) error
 	Usage string
 }
 
@@ -26,25 +26,19 @@ const dbName = "budgeter.db"
 func getDBPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return ".", fmt.Errorf("error getting db path: %w", err)
+		return ".", fmt.Errorf("error getting database path: %w", err)
 	}
 	return filepath.Join(home, dbName), nil
 }
 
-func initDB() (*models.DB, error) {
+func initDB() (*sql.DB, error) {
 	dbPath, err := getDBPath()
 	if err != nil {
 		return nil, err
 	}
-	d, err := sql.Open("sqlite3", dbPath)
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		return nil, err
-	}
-
-	db := &models.DB{DB: d}
-	_, err = db.CreateTransactionTable()
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error opening database: %w", err)
 	}
 
 	return db, nil
@@ -75,16 +69,17 @@ func main() {
 
 	db, err := initDB()
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Fatal(err)
 	}
 	defer db.Close()
+	table := &transaction.Table{DB: db}
 
 	cmd, ok := commands[alias]
 	if !ok {
 		stderr(usage)
 		os.Exit(1)
 	}
-	err = cmd.Exec(db, args)
+	err = cmd.Exec(table, args)
 	if err != nil {
 		log.Printf("%v: %v\n", alias, err)
 		if cmd.Usage != "" {
