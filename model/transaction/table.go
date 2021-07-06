@@ -98,10 +98,6 @@ func (t *Table) Total() (int, error) {
 	return total, nil
 }
 
-func (t *Table) Close() error {
-	return t.DB.Close()
-}
-
 // Rows wraps *sql.Rows to easily scan Transactions from a DB
 type Rows struct{ *sql.Rows }
 

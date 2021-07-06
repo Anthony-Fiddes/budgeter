@@ -29,7 +29,7 @@ func TestTable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer table.Close()
+	defer table.DB.Close()
 
 	testData := []transaction.Transaction{
 		// Test data graciously provided by Sarah Werum
