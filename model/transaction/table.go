@@ -93,7 +93,7 @@ func (t *Table) Total() (int, error) {
 	var total int
 	err := row.Scan(&total)
 	if err != nil {
-		return 0, fmt.Errorf("could not query database for total: %w", err)
+		return 0, fmt.Errorf("transaction: could not query database for total: %w", err)
 	}
 	return total, nil
 }

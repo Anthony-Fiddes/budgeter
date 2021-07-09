@@ -48,7 +48,7 @@ func (t Transaction) AmountString() string {
 func Date(date string) (int64, error) {
 	result, err := time.Parse(DateLayout, date)
 	if err != nil {
-		return 0, fmt.Errorf("date \"%s\" must be provided in M/D/YYYY format", date)
+		return 0, fmt.Errorf("transaction: date \"%s\" must be provided in M/D/YYYY format", date)
 	}
 	return result.Unix(), nil
 }
@@ -71,7 +71,10 @@ func Dollars(amount int) string {
 // cents that it represents
 func Cents(currency string) (int, error) {
 	currencyErr := func() error {
-		errCurrencyFmt := fmt.Sprintf("currency \"%%s\" must be provided in [%s]X%sXX format (\"%s\" is allowed)", Currency, Point, Thousands)
+		errCurrencyFmt := fmt.Sprintf(
+			"transaction: currency \"%%s\" must be provided in [%s]X%sXX format (\"%s\" is allowed)",
+			Currency, Point, Thousands,
+		)
 		return fmt.Errorf(errCurrencyFmt, currency)
 	}
 	currency = strings.Replace(currency, Currency, "", 1)
