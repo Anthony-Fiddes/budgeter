@@ -86,5 +86,6 @@ func main() {
 			stderr("\n")
 			stderr(cmd.Usage)
 		}
+		os.Exit(1)
 	}
 }
