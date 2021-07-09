@@ -35,8 +35,8 @@ func ingest(table *transaction.Table, cmdArgs []string) error {
 	}
 
 	args := fs.Args()
-	if len(args) < 1 {
-		return errors.New("not enough arguments")
+	if len(args) != 1 {
+		return fmt.Errorf("%s takes one argument", ingestName)
 	}
 
 	filePath := args[0]
