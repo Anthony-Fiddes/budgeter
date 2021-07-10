@@ -1,14 +1,12 @@
 package main
 
 import (
-	"encoding/csv"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
@@ -48,9 +46,20 @@ func ingest(table *transaction.Table, cmdArgs []string) error {
 			return err
 		}
 		defer f.Close()
-		err = ingestCSV(f, table)
-		if err != nil {
-			return err
+
+		cw := transaction.NewCSVReader(f)
+		for {
+			tx, err := cw.Read()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return err
+			}
+			err = table.Insert(tx)
+			if err != nil {
+				return err
+			}
 		}
 	case "":
 		return errors.New("no file type specified")
@@ -60,55 +69,4 @@ func ingest(table *transaction.Table, cmdArgs []string) error {
 
 	fmt.Printf("Successfully ingested %s\n", filePath)
 	return nil
-}
-
-// TODO: Inserter and ingestCSV should be refactored out to a package with tests
-type Inserter interface {
-	Insert(transaction.Transaction) error
-}
-
-func ingestCSV(r io.Reader, in Inserter) error {
-	cr := csv.NewReader(r)
-	cr.FieldsPerRecord = fieldsPerRecord
-	for {
-		row, err := cr.Read()
-		if err == io.EOF {
-			break
-		}
-		tx, err := csvRowToTx(row)
-		if err != nil {
-			return err
-		}
-		err = in.Insert(tx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func csvRowToTx(row []string) (transaction.Transaction, error) {
-	if len(row) < 4 {
-		return transaction.Transaction{}, errors.New(`not enough columns in input`)
-	}
-	for i := range row {
-		row[i] = strings.TrimSpace(row[i])
-	}
-
-	amount, err := transaction.Cents(row[2])
-	if err != nil {
-		return transaction.Transaction{}, err
-	}
-	d := row[0]
-	date, err := transaction.Date(d)
-	if err != nil {
-		return transaction.Transaction{}, err
-	}
-	tx := transaction.Transaction{
-		Entity: row[1],
-		Amount: amount,
-		Date:   date,
-		Note:   row[3],
-	}
-	return tx, err
 }
