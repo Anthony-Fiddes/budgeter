@@ -73,6 +73,7 @@ func main() {
 	}
 	defer db.Close()
 	table := &transaction.Table{DB: db}
+	table.Init()
 
 	cmd, ok := commands[alias]
 	if !ok {
