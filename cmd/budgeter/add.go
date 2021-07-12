@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
@@ -23,17 +24,30 @@ func interactiveAdd(table *transaction.Table) error {
 		return response, err
 	}
 
-	// TODO: make the date default to today
-	// TODO: perhaps implement a date picker? / start the next date where you
-	// left off with the last one / allow short dates like "21" or "6/21" that
+	lastDate := time.Now().Format(transaction.DateLayout)
+	getDate := func() (int64, error) {
+		fmt.Printf("%s [%s]: ", transaction.DateCol, lastDate)
+		response, err := inpt.Line()
+		if err != nil {
+			return 0, err
+		}
+		if response == "" {
+			response = lastDate
+		}
+		date, err := transaction.Date(response)
+		if err != nil {
+			return 0, err
+		}
+		lastDate = response
+		return date, err
+	}
+
+	// TODO: allow short dates like "21" or "6/21" that
 	// default to this month or year
 	getTransaction := func() (transaction.Transaction, error) {
+		var err error
 		tx := transaction.Transaction{}
-		date, err := getField(transaction.DateCol)
-		if err != nil {
-			return transaction.Transaction{}, err
-		}
-		tx.Date, err = transaction.Date(date)
+		tx.Date, err = getDate()
 		if err != nil {
 			return transaction.Transaction{}, err
 		}
@@ -67,8 +81,6 @@ func interactiveAdd(table *transaction.Table) error {
 
 		// TODO: Add context when adding transactions. e.g. making the last
 		// used date the new default?, enabling an undo command
-		// TODO: When adding a transaction, maybe show a couple of
-		// transactions from around the same time?
 		fmt.Print("\nWould you like to add another transaction? (y/[n]) ")
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
