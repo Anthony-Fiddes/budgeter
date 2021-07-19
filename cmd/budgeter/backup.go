@@ -30,7 +30,9 @@ func backup(table *transaction.Table, cmdArgs []string) error {
 	}
 	defer dbFile.Close()
 	targetPath := cmdArgs[0]
-	target, err := os.OpenFile(targetPath, os.O_CREATE, 0744)
+	// TODO: make some consideration for the case where a file is already present.
+	// Consider writing to a temp file first or something
+	target, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
