@@ -1,0 +1,9 @@
+Usage:
+    budgeter <command> [arguments]
+
+Commands:
+    add
+    backup <path>
+    recent
+    ingest <file>
+    wipe
