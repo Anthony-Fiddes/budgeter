@@ -21,7 +21,7 @@ type command struct {
 	Usage string
 }
 
-const dbName = "budgeter.db"
+const dbName = ".budgeter.db"
 
 func getDBPath() (string, error) {
 	home, err := os.UserHomeDir()
