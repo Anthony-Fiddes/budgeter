@@ -56,6 +56,7 @@ func main() {
 	commands := map[string]command{
 		addName:    {Exec: add},
 		backupName: {Exec: backup, Usage: backupUsage},
+		exportName: {Exec: export},
 		ingestName: {Exec: ingest},
 		wipeName:   {Exec: wipe},
 		recentName: {Exec: recent, Usage: recentUsage},
