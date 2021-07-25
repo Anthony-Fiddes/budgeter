@@ -21,6 +21,7 @@ const (
 )
 
 // Transaction represents a single transaction in a person's budget
+// TODO: add a String() function
 type Transaction struct {
 	Entity string
 	// In 1/100's of a cent
