@@ -1,3 +1,0 @@
-Backup saves your database file to the path you provide.
-
-Usage: backup <path>

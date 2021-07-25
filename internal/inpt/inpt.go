@@ -17,7 +17,7 @@ func init() {
 func Line() (string, error) {
 	scanner.Scan()
 	if err := scanner.Err(); err != nil {
-		return "", fmt.Errorf("input: error reading line from user: %w", err)
+		return "", fmt.Errorf("could not read line: %w", err)
 	}
 	result := scanner.Text()
 	result = strings.TrimSpace(result)
@@ -29,7 +29,7 @@ func Line() (string, error) {
 func Confirm() (bool, error) {
 	input, err := Line()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("could not get user confirmation: %w", err)
 	}
 	input = strings.ToLower(input)
 	if input != "y" {

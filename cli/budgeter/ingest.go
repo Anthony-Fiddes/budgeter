@@ -1,9 +1,7 @@
-package main
+package budgeter
 
 import (
-	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -24,17 +22,18 @@ const (
 // only supports csv.
 // TODO: write tests
 // TODO: use a transaction so that all of the file is added or none of it is!
-func ingest(table *transaction.Table, cmdArgs []string) error {
-	var err error
+func ingest(c *config) int {
 	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
-	err = fs.Parse(cmdArgs)
+	err := fs.Parse(c.args)
 	if err != nil {
-		return err
+		c.logParsingErr(err)
+		return 1
 	}
 
 	args := fs.Args()
 	if len(args) != 1 {
-		return fmt.Errorf("%s takes one argument", ingestName)
+		c.log.Printf("%s takes one argument", ingestName)
+		return 1
 	}
 
 	filePath := args[0]
@@ -43,7 +42,8 @@ func ingest(table *transaction.Table, cmdArgs []string) error {
 	case extCSV:
 		f, err := os.Open(filePath)
 		if err != nil {
-			return err
+			c.log.Printf("could not open \"%s\": %v", filePath, err)
+			return 1
 		}
 		defer f.Close()
 
@@ -54,19 +54,22 @@ func ingest(table *transaction.Table, cmdArgs []string) error {
 				if err == io.EOF {
 					break
 				}
-				return err
+				c.log.Println(err)
+				return 1
 			}
-			err = table.Insert(tx)
+			err = c.table.Insert(tx)
 			if err != nil {
-				return err
+				c.log.Println(err)
+				return 1
 			}
 		}
 	case "":
-		return errors.New("no file type specified")
+		c.log.Println("no file type specified")
+		return 1
 	default:
-		return errors.New("unsupported file type")
+		c.log.Println("unsupported file type")
+		return 1
 	}
 
-	fmt.Printf("Successfully ingested %s\n", filePath)
-	return nil
+	return 0
 }

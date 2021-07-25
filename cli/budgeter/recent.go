@@ -1,8 +1,7 @@
-package main
+package budgeter
 
 import (
 	_ "embed"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -37,33 +36,37 @@ type recentFlags struct {
 // TODO: Show SQLite IDs so that I can reference transactions?
 // otherwise maybe a hash?
 // TODO: Add a "pinned" feature/subcommand?
-func recent(table *transaction.Table, cmdArgs []string) error {
+func recent(c *config) int {
 	var err error
 	flags := recentFlags{}
 	fs := flag.NewFlagSet(recentName, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	fs.StringVar(&flags.search, "s", "", "")
 	fs.BoolVar(&flags.flip, "f", false, "")
-	if err := fs.Parse(cmdArgs); err != nil {
-		return err
+	if err := fs.Parse(c.args); err != nil {
+		c.logParsingErr(err)
+		return 1
 	}
 	args := fs.Args()
 	if len(args) == 1 {
 		flags.limit, err = strconv.Atoi(args[0])
 		if err != nil {
-			return errors.New("count must be a number")
+			c.log.Printf("count \"%s\" must be a number", args[0])
+			return 1
 		}
 	} else {
 		flags.limit = defaultRecentLimit
 	}
 
-	rows, err := table.Search(flags.search, flags.limit)
+	rows, err := c.table.Search(flags.search, flags.limit)
 	if err != nil {
-		return err
+		c.log.Println(err)
+		return 1
 	}
 	transactions, err := rows.ScanSet(flags.limit)
 	if err != nil {
-		return err
+		c.log.Println(err)
+		return 1
 	}
 
 	tab := tabby.New()
@@ -84,9 +87,10 @@ func recent(table *transaction.Table, cmdArgs []string) error {
 	tab.Print()
 
 	if flags.search == "" {
-		total, err := table.Total()
+		total, err := c.table.Total()
 		if err != nil {
-			return err
+			c.log.Println(err)
+			return 1
 		}
 		totalString := fmt.Sprintf(totalTemplate, transaction.Dollars(total))
 		for i := 0; i < len(totalString); i++ {
@@ -96,5 +100,5 @@ func recent(table *transaction.Table, cmdArgs []string) error {
 		fmt.Print(totalString)
 	}
 	fmt.Println()
-	return nil
+	return 0
 }

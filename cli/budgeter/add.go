@@ -1,4 +1,4 @@
-package main
+package budgeter
 
 import (
 	"flag"
@@ -14,7 +14,7 @@ const (
 )
 
 // TODO: Find a way to handle duplicates gracefully
-func interactiveAdd(table *transaction.Table) error {
+func interactiveAdd(c *config) int {
 	getField := func(field string) (string, error) {
 		fmt.Printf("%s: ", field)
 		response, err := inpt.Line()
@@ -73,10 +73,12 @@ func interactiveAdd(table *transaction.Table) error {
 	for {
 		tx, err := getTransaction()
 		if err != nil {
-			return err
+			c.log.Println(err)
+			return 1
 		}
-		if err := table.Insert(tx); err != nil {
-			return err
+		if err := c.table.Insert(tx); err != nil {
+			c.log.Println(err)
+			return 1
 		}
 
 		// TODO: Add context when adding transactions. e.g. making the last
@@ -85,27 +87,30 @@ func interactiveAdd(table *transaction.Table) error {
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
 		if err != nil {
-			return err
+			c.log.Println(err)
+			return 1
 		}
 		if !confirmed {
 			break
 		}
 	}
 
-	return nil
+	return 1
 }
 
-func add(table *transaction.Table, cmdArgs []string) error {
-	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
-	if err := fs.Parse(cmdArgs); err != nil {
-		return err
+func add(c *config) int {
+	fs := flag.NewFlagSet(addName, flag.ContinueOnError)
+	if err := fs.Parse(c.args); err != nil {
+		c.logParsingErr(err)
+		return 1
 	}
 	args := fs.Args()
 	if len(args) == 0 {
-		return interactiveAdd(table)
+		return interactiveAdd(c)
 	} else if len(args) > fieldsPerRecord {
-		return fmt.Errorf("%s takes at most %d arguments", addName, fieldsPerRecord)
+		c.log.Printf("%s takes at most %d arguments", addName, fieldsPerRecord)
+		return 1
 	}
 	// TODO: implement an option that parses from flags or from args
-	return nil
+	return 0
 }

@@ -1,9 +1,7 @@
-package main
+package budgeter
 
 import (
-	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -18,31 +16,34 @@ const (
 //
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
-// TODO: use a transaction so that all of the file is added or none of it is!
-func export(table *transaction.Table, cmdArgs []string) error {
+func export(c *config) int {
 	var err error
 	fs := flag.NewFlagSet(exportName, flag.ContinueOnError)
-	err = fs.Parse(cmdArgs)
+	err = fs.Parse(c.args)
 	if err != nil {
-		return err
+		c.logParsingErr(err)
+		return 1
 	}
 
 	args := fs.Args()
 	if len(args) != 1 {
-		return fmt.Errorf("%s takes one argument", exportName)
+		c.log.Printf("%s takes one argument", exportName)
+		return 1
 	}
 
 	filePath := args[0]
 	fileType := filepath.Ext(filePath)
-	rows, err := table.Search("", -1)
+	rows, err := c.table.Search("", -1)
 	if err != nil {
-		return err
+		c.log.Println(err)
+		return 1
 	}
 	switch fileType {
 	case extCSV:
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			return err
+			c.log.Println(err)
+			return 1
 		}
 		defer f.Close()
 
@@ -50,17 +51,19 @@ func export(table *transaction.Table, cmdArgs []string) error {
 		for rows.Next() {
 			tx, err := rows.Scan()
 			if err != nil {
-				return err
+				c.log.Println(err)
+				return 1
 			}
 			cw.Write(tx)
 		}
 		cw.Flush()
 	case "":
-		return errors.New("no file type specified")
+		c.log.Println("no file type specified")
+		return 1
 	default:
-		return errors.New("unsupported file type")
+		c.log.Println("unsupported file type")
+		return 1
 	}
 
-	fmt.Printf("Successfully exported to %s\n", filePath)
-	return nil
+	return 0
 }
