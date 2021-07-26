@@ -63,7 +63,7 @@ func (c *CLI) Run(args []string) int {
 	}
 
 	alias := args[1]
-	cmdArgs := args[2:]
+	c.args = args[2:]
 	cmd, ok := commands[alias]
 	if !ok {
 		c.Log.Printf("command \"%s\" does not exist", alias)
@@ -71,6 +71,5 @@ func (c *CLI) Run(args []string) int {
 		c.Log.Println(usage)
 		return 1
 	}
-	c.args = cmdArgs
 	return cmd(c)
 }
