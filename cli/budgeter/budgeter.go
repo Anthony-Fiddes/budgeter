@@ -18,6 +18,7 @@ type Tabler interface {
 }
 
 type CLI struct {
+	args []string
 	// DBPath is the filepath for the datastore being used. It currently does
 	// not have a default.
 	DBPath string
@@ -27,15 +28,8 @@ type CLI struct {
 	Transactions Tabler
 }
 
-type config struct {
-	args         []string
-	dbPath       string
-	log          *log.Logger
-	transactions Tabler
-}
-
 // A command performs a budgeting action using config. It returns an error code.
-type command func(c *config) int
+type command func(c *CLI) int
 
 // Run runs the budgeter CLI with the given arguments.
 //
@@ -69,11 +63,6 @@ func (c *CLI) Run(args []string) int {
 		c.Log.Println(usage)
 		return 1
 	}
-	cfg := &config{
-		args:         cmdArgs,
-		dbPath:       c.DBPath,
-		log:          c.Log,
-		transactions: c.Transactions,
-	}
-	return cmd(cfg)
+	c.args = cmdArgs
+	return cmd(c)
 }

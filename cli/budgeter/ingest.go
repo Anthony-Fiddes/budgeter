@@ -22,7 +22,7 @@ const (
 // only supports csv.
 // TODO: write tests
 // TODO: use a transaction so that all of the file is added or none of it is!
-func ingest(c *config) int {
+func ingest(c *CLI) int {
 	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
 	err := fs.Parse(c.args)
 	if err != nil {
@@ -32,7 +32,7 @@ func ingest(c *config) int {
 
 	args := fs.Args()
 	if len(args) != 1 {
-		c.log.Printf("%s takes one argument", ingestName)
+		c.Log.Printf("%s takes one argument", ingestName)
 		return 1
 	}
 
@@ -42,7 +42,7 @@ func ingest(c *config) int {
 	case extCSV:
 		f, err := os.Open(filePath)
 		if err != nil {
-			c.log.Printf("could not open \"%s\": %v", filePath, err)
+			c.Log.Printf("could not open \"%s\": %v", filePath, err)
 			return 1
 		}
 		defer f.Close()
@@ -54,20 +54,20 @@ func ingest(c *config) int {
 				if err == io.EOF {
 					break
 				}
-				c.log.Println(err)
+				c.Log.Println(err)
 				return 1
 			}
-			err = c.transactions.Insert(tx)
+			err = c.Transactions.Insert(tx)
 			if err != nil {
-				c.log.Println(err)
+				c.Log.Println(err)
 				return 1
 			}
 		}
 	case "":
-		c.log.Println("no file type specified")
+		c.Log.Println("no file type specified")
 		return 1
 	default:
-		c.log.Println("unsupported file type")
+		c.Log.Println("unsupported file type")
 		return 1
 	}
 

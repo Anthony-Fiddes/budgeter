@@ -16,7 +16,7 @@ const (
 //
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
-func export(c *config) int {
+func export(c *CLI) int {
 	var err error
 	fs := flag.NewFlagSet(exportName, flag.ContinueOnError)
 	err = fs.Parse(c.args)
@@ -27,22 +27,22 @@ func export(c *config) int {
 
 	args := fs.Args()
 	if len(args) != 1 {
-		c.log.Printf("%s takes one argument", exportName)
+		c.Log.Printf("%s takes one argument", exportName)
 		return 1
 	}
 
 	filePath := args[0]
 	fileType := filepath.Ext(filePath)
-	rows, err := c.transactions.Search("", -1)
+	rows, err := c.Transactions.Search("", -1)
 	if err != nil {
-		c.log.Println(err)
+		c.Log.Println(err)
 		return 1
 	}
 	switch fileType {
 	case extCSV:
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			c.log.Println(err)
+			c.Log.Println(err)
 			return 1
 		}
 		defer f.Close()
@@ -51,17 +51,17 @@ func export(c *config) int {
 		for rows.Next() {
 			tx, err := rows.Scan()
 			if err != nil {
-				c.log.Println(err)
+				c.Log.Println(err)
 				return 1
 			}
 			cw.Write(tx)
 		}
 		cw.Flush()
 	case "":
-		c.log.Println("no file type specified")
+		c.Log.Println("no file type specified")
 		return 1
 	default:
-		c.log.Println("unsupported file type")
+		c.Log.Println("unsupported file type")
 		return 1
 	}
 

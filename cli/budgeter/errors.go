@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func (c *config) logParsingErr(err error) {
+func (c *CLI) logParsingErr(err error) {
 	args := strings.Join(c.args, " ")
-	c.log.Printf("could not parse args \"%s\": %v", args, err)
+	c.Log.Printf("could not parse args \"%s\": %v", args, err)
 }

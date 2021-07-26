@@ -14,7 +14,7 @@ const (
 )
 
 // TODO: Find a way to handle duplicates gracefully
-func interactiveAdd(c *config) int {
+func interactiveAdd(c *CLI) int {
 	getField := func(field string) (string, error) {
 		fmt.Printf("%s: ", field)
 		response, err := inpt.Line()
@@ -73,11 +73,11 @@ func interactiveAdd(c *config) int {
 	for {
 		tx, err := getTransaction()
 		if err != nil {
-			c.log.Println(err)
+			c.Log.Println(err)
 			return 1
 		}
-		if err := c.transactions.Insert(tx); err != nil {
-			c.log.Println(err)
+		if err := c.Transactions.Insert(tx); err != nil {
+			c.Log.Println(err)
 			return 1
 		}
 
@@ -87,7 +87,7 @@ func interactiveAdd(c *config) int {
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
 		if err != nil {
-			c.log.Println(err)
+			c.Log.Println(err)
 			return 1
 		}
 		if !confirmed {
@@ -98,7 +98,7 @@ func interactiveAdd(c *config) int {
 	return 1
 }
 
-func add(c *config) int {
+func add(c *CLI) int {
 	fs := flag.NewFlagSet(addName, flag.ContinueOnError)
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
@@ -108,7 +108,7 @@ func add(c *config) int {
 	if len(args) == 0 {
 		return interactiveAdd(c)
 	} else if len(args) > fieldsPerRecord {
-		c.log.Printf("%s takes at most %d arguments", addName, fieldsPerRecord)
+		c.Log.Printf("%s takes at most %d arguments", addName, fieldsPerRecord)
 		return 1
 	}
 	// TODO: implement an option that parses from flags or from args
