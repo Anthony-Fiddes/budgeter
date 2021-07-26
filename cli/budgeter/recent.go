@@ -45,6 +45,8 @@ func recent(c *config) int {
 	fs.BoolVar(&flags.flip, "f", false, "")
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
+		c.log.Println()
+		c.log.Println(recentUsage)
 		return 1
 	}
 	args := fs.Args()
