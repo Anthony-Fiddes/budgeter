@@ -20,22 +20,30 @@ type Tabler interface {
 
 type CLI struct {
 	args []string
-	// DBPath is the filepath for the datastore being used. It currently does
-	// not have a default.
+	// DBPath is the filepath for the datastore being used. It does not have a
+	// default.
 	DBPath string
 	// Log is used by CLI to log errors. By default, it writes to stderr with no
 	// date prefix.
-	Log          *log.Logger
+	Log *log.Logger
+	// Transactions is a Transactions table, it allows the CLI app to interact
+	// with a store of transactions.
 	Transactions Tabler
 }
 
-// A command performs a budgeting action using config. It returns an error code.
+// A command performs a budgeting action using the configured CLI. It returns an error code.
 type command func(c *CLI) int
 
 // Run runs the budgeter CLI with the given arguments.
 //
 // Run returns an error code. 1 is an error, and 0 means success.
 func (c *CLI) Run(args []string) int {
+	if c.DBPath == "" {
+		panic("budgeter: DBPath must be set on CLI")
+	}
+	if c.Transactions == nil {
+		panic("budgeter: Transactions must be set on CLI")
+	}
 	if c.Log == nil {
 		c.Log = log.New(os.Stderr, "", 0)
 	}
