@@ -2,6 +2,7 @@ package budgeter
 
 import (
 	"log"
+	"os"
 
 	_ "embed"
 
@@ -22,8 +23,8 @@ type CLI struct {
 	// DBPath is the filepath for the datastore being used. It currently does
 	// not have a default.
 	DBPath string
-	// Log is used by CLI to log errors. Its default is the default logger with
-	// no date prefix.
+	// Log is used by CLI to log errors. By default, it writes to stderr with no
+	// date prefix.
 	Log          *log.Logger
 	Transactions Tabler
 }
@@ -36,8 +37,7 @@ type command func(c *CLI) int
 // Run returns an error code. 1 is an error, and 0 means success.
 func (c *CLI) Run(args []string) int {
 	if c.Log == nil {
-		c.Log = log.Default()
-		c.Log.SetFlags(0)
+		c.Log = log.New(os.Stderr, "", 0)
 	}
 
 	if len(args) < 2 {
