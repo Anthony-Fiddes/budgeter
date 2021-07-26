@@ -76,7 +76,7 @@ func interactiveAdd(c *config) int {
 			c.log.Println(err)
 			return 1
 		}
-		if err := c.table.Insert(tx); err != nil {
+		if err := c.transactions.Insert(tx); err != nil {
 			c.log.Println(err)
 			return 1
 		}

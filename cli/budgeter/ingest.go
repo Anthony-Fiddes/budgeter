@@ -57,7 +57,7 @@ func ingest(c *config) int {
 				c.log.Println(err)
 				return 1
 			}
-			err = c.table.Insert(tx)
+			err = c.transactions.Insert(tx)
 			if err != nil {
 				c.log.Println(err)
 				return 1

@@ -60,7 +60,7 @@ func recent(c *config) int {
 		flags.limit = defaultRecentLimit
 	}
 
-	rows, err := c.table.Search(flags.search, flags.limit)
+	rows, err := c.transactions.Search(flags.search, flags.limit)
 	if err != nil {
 		c.log.Println(err)
 		return 1
@@ -89,7 +89,7 @@ func recent(c *config) int {
 	tab.Print()
 
 	if flags.search == "" {
-		total, err := c.table.Total()
+		total, err := c.transactions.Total()
 		if err != nil {
 			c.log.Println(err)
 			return 1

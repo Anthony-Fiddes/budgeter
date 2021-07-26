@@ -23,17 +23,15 @@ type CLI struct {
 	DBPath string
 	// Log is used by CLI to log errors. Its default is the default logger with
 	// no date prefix.
-	Log *log.Logger
-	// Out is where CLI should print its output
-	// It defaults to os.Stdout
-	Table Tabler
+	Log          *log.Logger
+	Transactions Tabler
 }
 
 type config struct {
-	args   []string
-	dbPath string
-	log    *log.Logger
-	table  Tabler
+	args         []string
+	dbPath       string
+	log          *log.Logger
+	transactions Tabler
 }
 
 // A command performs a budgeting action using config. It returns an error code.
@@ -72,10 +70,10 @@ func (c *CLI) Run(args []string) int {
 		return 1
 	}
 	cfg := &config{
-		args:   cmdArgs,
-		dbPath: c.DBPath,
-		log:    c.Log,
-		table:  c.Table,
+		args:         cmdArgs,
+		dbPath:       c.DBPath,
+		log:          c.Log,
+		transactions: c.Transactions,
 	}
 	return cmd(cfg)
 }

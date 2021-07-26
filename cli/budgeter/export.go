@@ -33,7 +33,7 @@ func export(c *config) int {
 
 	filePath := args[0]
 	fileType := filepath.Ext(filePath)
-	rows, err := c.table.Search("", -1)
+	rows, err := c.transactions.Search("", -1)
 	if err != nil {
 		c.log.Println(err)
 		return 1

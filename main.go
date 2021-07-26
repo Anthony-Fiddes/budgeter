@@ -39,8 +39,8 @@ func main() {
 		log.Fatalf("could not initialize database transactions table: %v\n", err)
 	}
 	app := budgeter.CLI{
-		DBPath: dbPath,
-		Table:  &transaction.Table{DB: db},
+		DBPath:       dbPath,
+		Transactions: &transaction.Table{DB: db},
 	}
 	os.Exit(app.Run(os.Args))
 }
