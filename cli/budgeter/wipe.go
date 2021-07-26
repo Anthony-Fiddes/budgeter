@@ -13,7 +13,6 @@ const (
 	wipeCancelMessage = "No data deleted."
 )
 
-// TODO: Add usage
 func wipe(c *config) int {
 	fs := flag.NewFlagSet(wipeName, flag.ContinueOnError)
 	confirmed := fs.Bool("y", false, "Confirms that the user would like to wipe their budgeting information.")
