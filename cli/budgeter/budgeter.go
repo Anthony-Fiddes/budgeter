@@ -12,31 +12,55 @@ import (
 //go:embed usage.txt
 var usage string
 
-type Tabler interface {
+// Period is an enum representing the lengths of time that budgeter allows
+type Period int
+
+const (
+	Day Period = iota
+	Week
+	Month
+)
+
+func (p Period) String() string {
+	return [...]string{"Day", "Week", "Month"}[int(p)]
+}
+
+type Table interface {
 	Insert(transaction.Transaction) error
 	Search(query string, limit int) (*transaction.Rows, error)
 	Total() (int, error)
 }
 
+type Store interface {
+	// Put puts a value into the Store. If it is already present, it's overwritten.
+	Put(Key, Value string) error
+	// Get gets a value from the Store. If the value is not present, "" is
+	// returned with a nil error.
+	Get(Key string) (string, error)
+}
+
 type CLI struct {
 	args []string
+	// Config a store where CLI can persist data in a key, value format.
+	Config Store
 	// DBPath is the filepath for the datastore being used. It does not have a
-	// default.
+	// default, i.e. it must be set.
 	DBPath string
 	// Log is used by CLI to log errors. By default, it writes to stderr with no
 	// date prefix.
 	Log *log.Logger
 	// Transactions is a Transactions table, it allows the CLI app to interact
 	// with a store of transactions.
-	Transactions Tabler
+	Transactions Table
 }
 
-// A command performs a budgeting action using the configured CLI. It returns an error code.
+// A command performs a budgeting action using the configured CLI. It returns an
+// error code. A nonzero code is an error.
 type command func(c *CLI) int
 
 // Run runs the budgeter CLI with the given arguments.
 //
-// Run returns an error code. 1 is an error, and 0 means success.
+// Run returns an error code. A nonzero code is an error, and 0 means success.
 func (c *CLI) Run(args []string) int {
 	if c.DBPath == "" {
 		panic("budgeter: DBPath must be set on CLI")
