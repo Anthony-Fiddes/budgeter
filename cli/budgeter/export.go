@@ -17,9 +17,8 @@ const (
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
 func export(c *CLI) int {
-	var err error
 	fs := flag.NewFlagSet(exportName, flag.ContinueOnError)
-	err = fs.Parse(c.args)
+	err := fs.Parse(c.args)
 	if err != nil {
 		c.logParsingErr(err)
 		return 1
