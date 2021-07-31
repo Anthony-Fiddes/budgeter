@@ -54,6 +54,8 @@ func recent(c *CLI) int {
 		flags.limit, err = strconv.Atoi(args[0])
 		if err != nil {
 			c.Log.Printf("count \"%s\" must be a number", args[0])
+			c.Log.Println()
+			c.Log.Println(recentUsage)
 			return 1
 		}
 	} else {
