@@ -12,17 +12,36 @@ import (
 //go:embed usage.txt
 var usage string
 
-// Period is an enum representing the lengths of time that budgeter allows
-type Period int
+// period is an enum representing the lengths of time that budgeter allows
+type period int
 
 const (
-	Day Period = iota
-	Week
-	Month
+	unknown period = iota
+	day
+	week
+	month
 )
 
-func (p Period) String() string {
-	return [...]string{"Day", "Week", "Month"}[int(p)]
+func (p period) String() string {
+	if p < 0 || p > month {
+		return "unknown"
+	}
+	return [...]string{"unknown", "day", "week", "month"}[int(p)]
+}
+
+var periods = map[string]period{
+	unknown.String(): unknown,
+	day.String():     day,
+	week.String():    week,
+	month.String():   month,
+}
+
+func getPeriod(s string) period {
+	p, ok := periods[s]
+	if !ok {
+		return unknown
+	}
+	return p
 }
 
 type Table interface {
@@ -82,6 +101,7 @@ func (c *CLI) Run(args []string) int {
 		backupName: backup,
 		exportName: export,
 		ingestName: ingest,
+		limitName:  limit,
 		wipeName:   wipe,
 		recentName: recent,
 	}

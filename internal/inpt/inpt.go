@@ -13,6 +13,14 @@ func init() {
 	scanner = bufio.NewScanner(os.Stdin)
 }
 
+// Normalize trims the leading and trailing whitespace of a string and makes all
+// of its characters lowercase.
+func Normalize(str string) string {
+	str = strings.TrimSpace(str)
+	str = strings.ToLower(str)
+	return str
+}
+
 // Line reads a line from stdin and trims the whitespace around it.
 func Line() (string, error) {
 	scanner.Scan()
