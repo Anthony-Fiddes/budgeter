@@ -20,14 +20,16 @@ const (
 	Thousands = ","
 )
 
-// Transaction represents a single transaction in a person's budget
 // TODO: add a String() function
+// Transaction represents a single transaction in a person's budget
 type Transaction struct {
+	// Entity is the person or company the transaction was made with.
 	Entity string
-	// In 1/100's of a cent
+	// Amount is the cost of the transaction in cents
 	Amount int
-	// Unix Time
+	// Date is the Unix Time the transaction occurred.
 	Date int64
+	// Note is any note the user wants to add about the transaction.
 	Note string
 }
 
@@ -54,18 +56,19 @@ func Date(date string) (int64, error) {
 	return result.Unix(), nil
 }
 
-// Dollars returns a string that represents the value of the currency given by "amount"
-func Dollars(amount int) string {
+// Dollars returns a string that represents the value of the given number of
+// "cents".
+func Dollars(cents int) string {
 	sign := ""
-	negative := amount < 0
+	negative := cents < 0
 	if negative {
-		amount *= -1
+		cents *= -1
 		sign = "-"
 	}
-	dollars := amount / 100
-	cents := amount % 100
+	dollars := cents / 100
+	pennies := cents % 100
 	// TODO: determine whether or not I want this to add in thousands separators
-	return fmt.Sprintf("%s%s%d.%02d", sign, Currency, dollars, cents)
+	return fmt.Sprintf("%s%s%d.%02d", sign, Currency, dollars, pennies)
 }
 
 // Cents takes a currency string formatted as [$]X.XX and returns the number of
@@ -85,17 +88,17 @@ func Cents(currency string) (int, error) {
 	if err != nil {
 		return 0, currencyErr()
 	}
-	cents := 0
+	pennies := 0
 	if len(c) == 2 {
-		cents, err = strconv.Atoi(c[1])
+		pennies, err = strconv.Atoi(c[1])
 		if err != nil {
 			return 0, currencyErr()
 		}
 		if dollars < 0 {
-			cents *= -1
+			pennies *= -1
 		}
 	} else if len(c) > 2 {
 		return 0, currencyErr()
 	}
-	return dollars*100 + cents, nil
+	return dollars*100 + pennies, nil
 }
