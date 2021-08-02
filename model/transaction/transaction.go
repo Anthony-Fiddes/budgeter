@@ -1,3 +1,5 @@
+// transaction provides a model for a single user transaction. It also provides
+// a simple implementation of a sqlite table for storing and querying transactions.
 package transaction
 
 import (

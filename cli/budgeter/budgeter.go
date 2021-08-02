@@ -22,6 +22,13 @@ const (
 	month
 )
 
+func (p period) Unknown() bool {
+	if p <= 0 || p > month {
+		return true
+	}
+	return false
+}
+
 func (p period) String() string {
 	if p < 0 || p > month {
 		return "unknown"
