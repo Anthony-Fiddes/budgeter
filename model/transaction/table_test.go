@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 	_ "github.com/mattn/go-sqlite3"
@@ -85,7 +86,7 @@ func TestTable(t *testing.T) {
 		rows, err := table.Search(tx.Entity, 1)
 		if err != nil {
 			t.Logf("transaction: %+v", tx)
-			t.Fatalf(`Search failed: %v`, err)
+			t.Fatalf(`table.Search failed: %v`, err)
 		}
 
 		rows.Next()
@@ -98,7 +99,30 @@ func TestTable(t *testing.T) {
 			)
 		}
 		if rows.Next() {
-			t.Log("Rows.Next should be false after one call")
+			t.Log("Rows.Next should be false after one call but isn't")
+		}
+	}
+
+	// Range Test
+	{
+		expected := testData[2:]
+		rows, err := table.Range(time.Unix(5, 0), time.Unix(6, 0), -1)
+		if err != nil {
+			t.Fatalf("table.Range failed: %v", err)
+		}
+		result, err := rows.ScanSet()
+		if err != nil {
+			t.Fatalf("Could not scan rows from table: %v", err)
+		}
+		for i := range result {
+			r := result[i]
+			e := expected[i]
+			if r != e {
+				t.Logf("result transactions: %+v", result)
+				t.Logf("expected transactions: %+v", expected)
+				t.Logf("wrong transaction: %+v", r)
+				t.Fatalf("expected transaction: %+v", e)
+			}
 		}
 	}
 

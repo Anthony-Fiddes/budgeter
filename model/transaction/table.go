@@ -3,6 +3,7 @@ package transaction
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 // Table is the transactions table in a database
@@ -62,6 +63,30 @@ func (t *Table) Search(query string, limit int) (*Rows, error) {
 	return &Rows{rows}, nil
 }
 
+// Range returns the transactions that occurred within the give range of time.
+// It returns, at most, "limit" transactions, and returns them in chronological
+// order. A negative "limit" will return as many transactions as are available.
+func (t *Table) Range(start, end time.Time, limit int) (*Rows, error) {
+	startUnix := start.UTC().Unix()
+	stopUnix := end.UTC().Unix()
+	rows, err := t.DB.Query(
+		fmt.Sprintf(
+			"SELECT * FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s ASC LIMIT ?",
+			TableName,
+			DateCol,
+			DateCol,
+			DateCol,
+		),
+		startUnix,
+		stopUnix,
+		limit,
+	)
+	if err != nil {
+		return nil, queryError(err)
+	}
+	return &Rows{rows}, nil
+}
+
 // Insert inserts a transaction into the transactions table
 func (t *Table) Insert(tx Transaction) error {
 	_, err := t.DB.Exec(
@@ -112,10 +137,11 @@ func (r *Rows) Scan() (Transaction, error) {
 }
 
 // ScanSet scans up to "limit" transactions from a result set
-// into a slice. A negative "limit" will scan 0 transactions.
-func (r *Rows) ScanSet(limit int) ([]Transaction, error) {
+// into a slice. Do not use ScanSet if you expect that that your result set will
+// be very large.
+func (r *Rows) ScanSet() ([]Transaction, error) {
 	var result []Transaction
-	for i := 0; i < limit && r.Next(); i++ {
+	for r.Next() {
 		tx, err := r.Scan()
 		if err != nil {
 			return nil, err

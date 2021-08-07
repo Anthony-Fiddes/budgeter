@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 	"github.com/cheynewallace/tabby"
@@ -67,7 +68,7 @@ func recent(c *CLI) int {
 		c.Log.Println(err)
 		return 1
 	}
-	transactions, err := rows.ScanSet(flags.limit)
+	transactions, err := rows.ScanSet()
 	if err != nil {
 		c.Log.Println(err)
 		return 1
@@ -101,7 +102,26 @@ func recent(c *CLI) int {
 			fmt.Print("=")
 		}
 		fmt.Println()
-		fmt.Print(totalString)
+		fmt.Println(totalString)
+
+		// TODO: make this configurable with limit subcommand
+		now := time.Now().UTC()
+		monthStart := now.AddDate(0, 0, -now.Day())
+		rows, err := c.Transactions.Range(monthStart, now, flags.limit)
+		if err != nil {
+			c.Log.Println(err)
+			return 1
+		}
+		monthTxs, err := rows.ScanSet()
+		if err != nil {
+			c.Log.Println(err)
+			return 1
+		}
+		oneMonthSpending := 0
+		for _, tx := range monthTxs {
+			oneMonthSpending += tx.Amount
+		}
+		fmt.Printf("Current Month: %s", transaction.Dollars(oneMonthSpending))
 	}
 	fmt.Println()
 	return 0

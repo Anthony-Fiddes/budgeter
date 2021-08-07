@@ -3,6 +3,7 @@ package budgeter
 import (
 	"log"
 	"os"
+	"time"
 
 	_ "embed"
 
@@ -53,6 +54,7 @@ func getPeriod(s string) period {
 
 type Table interface {
 	Insert(transaction.Transaction) error
+	Range(start, end time.Time, limit int) (*transaction.Rows, error)
 	Search(query string, limit int) (*transaction.Rows, error)
 	Total() (int, error)
 }
