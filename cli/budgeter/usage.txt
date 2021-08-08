@@ -4,6 +4,7 @@ Usage:
 Commands:
     add
     backup <path>
-    recent
+    recent [limit]
     ingest <file>
+    export <file>
     wipe
