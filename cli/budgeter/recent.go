@@ -107,7 +107,7 @@ func recent(c *CLI) int {
 		// TODO: make this configurable with limit subcommand
 		now := time.Now().UTC()
 		monthStart := now.AddDate(0, 0, -now.Day())
-		rows, err := c.Transactions.Range(monthStart, now, flags.limit)
+		rows, err := c.Transactions.Range(monthStart, now, -1)
 		if err != nil {
 			c.Log.Println(err)
 			return 1
