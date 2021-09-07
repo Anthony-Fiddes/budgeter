@@ -46,7 +46,7 @@ func TestTable(t *testing.T) {
 			Entity: "Squirrel Sanctuary",
 			Amount: 123400,
 			Date:   0,
-			Note:   "Squirrels are very aggresive",
+			Note:   "Squirrels are very aggressive",
 		},
 		{
 			ID:     2,
