@@ -3,6 +3,9 @@ Recent displays your most recent transactions.
 Usage: recent [count]
     count is the number of transactions to be shown
 
+    -f Flip. Return the transactions in order from most recent to least recent.
+    -l int
+        Limit. The number of transactions to return (20 by default).
     -s string
-        Filters results so that only those including the given string are
+        Search. Filters results so that only those including the given string are
     shown.

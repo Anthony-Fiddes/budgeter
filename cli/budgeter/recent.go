@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"strconv"
 	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
@@ -16,7 +15,7 @@ const (
 	recentName = "recent"
 	// defaultRecentLimit specifies the default number of items to receive when
 	// the command is called
-	defaultRecentLimit = 5
+	defaultRecentLimit = 20
 	dateHeader         = "Date"
 	entityHeader       = "Entity"
 	amountHeader       = "Amount"
@@ -44,23 +43,18 @@ func recent(c *CLI) int {
 	fs.SetOutput(io.Discard)
 	fs.StringVar(&flags.search, "s", "", "")
 	fs.BoolVar(&flags.flip, "f", false, "")
+	fs.IntVar(&flags.limit, "l", defaultRecentLimit, "")
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
 		c.Log.Println()
 		c.Log.Println(recentUsage)
 		return 1
 	}
+	fs.Usage()
 	args := fs.Args()
-	if len(args) == 1 {
-		flags.limit, err = strconv.Atoi(args[0])
-		if err != nil {
-			c.Log.Printf("count \"%s\" must be a number", args[0])
-			c.Log.Println()
-			c.Log.Println(recentUsage)
-			return 1
-		}
-	} else {
-		flags.limit = defaultRecentLimit
+	if len(args) > 0 {
+		c.Log.Printf("%s takes no arguments", recentName)
+		return 1
 	}
 
 	rows, err := c.Transactions.Search(flags.search, flags.limit)
