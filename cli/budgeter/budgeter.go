@@ -54,7 +54,7 @@ func getPeriod(s string) period {
 
 type Table interface {
 	Insert(transaction.Transaction) error
-	Range(start, end time.Time, limit int) (*transaction.Rows, error)
+	RangeTotal(start, end time.Time) (int, error)
 	Search(query string, limit int) (*transaction.Rows, error)
 	Total() (int, error)
 }

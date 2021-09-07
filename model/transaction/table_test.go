@@ -112,7 +112,7 @@ func TestTable(t *testing.T) {
 		}
 		result, err := rows.ScanSet()
 		if err != nil {
-			t.Fatalf("Could not scan rows from table: %v", err)
+			t.Fatalf("could not scan rows from table: %v", err)
 		}
 		for i := range result {
 			r := result[i]
@@ -123,6 +123,21 @@ func TestTable(t *testing.T) {
 				t.Logf("wrong transaction: %+v", r)
 				t.Fatalf("expected transaction: %+v", e)
 			}
+		}
+	}
+
+	// RangeTotal Test
+	{
+		expected := 0
+		for _, tx := range testData[2:] {
+			expected += tx.Amount
+		}
+		result, err := table.RangeTotal(time.Unix(5, 0), time.Unix(6, 0))
+		if err != nil {
+			t.Logf("result total: %d", result)
+			t.Logf("expected total: %d", expected)
+			t.Logf("expected transactions: %+v", testData[2:])
+			t.Fatal(err)
 		}
 	}
 

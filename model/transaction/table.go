@@ -87,6 +87,34 @@ func (t *Table) Range(start, end time.Time, limit int) (*Rows, error) {
 	return &Rows{rows}, nil
 }
 
+// RangeTotal returns the cost of the transactions that occurred within the give
+// range of time.
+//
+// It uses, at most, "limit" transactions. A negative "limit" will use as many
+// transactions as are available.
+func (t *Table) RangeTotal(start, end time.Time) (int, error) {
+	startUnix := start.UTC().Unix()
+	stopUnix := end.UTC().Unix()
+	row := t.DB.QueryRow(
+		fmt.Sprintf(
+			"SELECT SUM(%s) FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s ASC",
+			AmountCol,
+			TableName,
+			DateCol,
+			DateCol,
+			DateCol,
+		),
+		startUnix,
+		stopUnix,
+	)
+	var total int
+	err := row.Scan(&total)
+	if err != nil {
+		return 0, fmt.Errorf("could not get total: %w", err)
+	}
+	return total, nil
+}
+
 // Insert inserts a transaction into the transactions table
 func (t *Table) Insert(tx Transaction) error {
 	_, err := t.DB.Exec(

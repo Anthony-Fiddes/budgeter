@@ -108,19 +108,10 @@ func recent(c *CLI) int {
 		// TODO: maybe add a test for this since it was buggy before?
 		now := time.Now().UTC()
 		monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		rows, err := c.Transactions.Range(monthStart, now, -1)
+		oneMonthSpending, err := c.Transactions.RangeTotal(monthStart, now)
 		if err != nil {
 			c.Log.Println(err)
 			return 1
-		}
-		monthTxs, err := rows.ScanSet()
-		if err != nil {
-			c.Log.Println(err)
-			return 1
-		}
-		oneMonthSpending := 0
-		for _, tx := range monthTxs {
-			oneMonthSpending += tx.Amount
 		}
 		fmt.Printf("Current Month: %s", transaction.Dollars(oneMonthSpending))
 	}
