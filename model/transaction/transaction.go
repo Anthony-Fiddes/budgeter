@@ -11,6 +11,7 @@ import (
 
 const (
 	TableName  = "transactions"
+	IDCol      = "ID"
 	EntityCol  = "Entity"
 	AmountCol  = "Amount"
 	DateCol    = "Date"
@@ -25,6 +26,7 @@ const (
 // TODO: add a String() function
 // Transaction represents a single transaction in a person's budget
 type Transaction struct {
+	ID int
 	// Entity is the person or company the transaction was made with.
 	Entity string
 	// Amount is the cost of the transaction in cents

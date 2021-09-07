@@ -16,6 +16,7 @@ const (
 	// defaultRecentLimit specifies the default number of items to receive when
 	// the command is called
 	defaultRecentLimit = 20
+	idHeader           = "ID"
 	dateHeader         = "Date"
 	entityHeader       = "Entity"
 	amountHeader       = "Amount"
@@ -69,7 +70,7 @@ func recent(c *CLI) int {
 	}
 
 	tab := tabby.New()
-	tab.AddHeader(dateHeader, entityHeader, amountHeader, noteHeader)
+	tab.AddHeader(idHeader, dateHeader, entityHeader, amountHeader, noteHeader)
 	for i := 0; i < len(transactions); i++ {
 		index := i
 		if !flags.flip {
@@ -81,7 +82,7 @@ func recent(c *CLI) int {
 		if tx.Amount >= 0 {
 			amount = " " + amount
 		}
-		tab.AddLine(tx.DateString(), tx.Entity, amount, tx.Note)
+		tab.AddLine(tx.ID, tx.DateString(), tx.Entity, amount, tx.Note)
 	}
 	tab.Print()
 

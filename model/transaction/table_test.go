@@ -35,18 +35,21 @@ func TestTable(t *testing.T) {
 	testData := []transaction.Transaction{
 		// Test data graciously provided by Sarah Werum
 		{
+			ID:     0,
 			Entity: "Apossumtheosis",
 			Amount: 400000,
 			Date:   -1,
 			Note:   "it has begun.",
 		},
 		{
+			ID:     1,
 			Entity: "Squirrel Sanctuary",
 			Amount: 123400,
 			Date:   0,
 			Note:   "Squirrels are very aggresive",
 		},
 		{
+			ID:     2,
 			Entity: "Frog rebellion",
 			Amount: 30800,
 			Date:   5,
@@ -54,12 +57,14 @@ func TestTable(t *testing.T) {
 		},
 		// My test data
 		{
+			ID:     3,
 			Entity: "Lyft",
 			Amount: 1368,
 			Date:   6,
 			Note:   "Ride to the doctor",
 		},
 		{
+			ID:     4,
 			Entity: "Kroger",
 			Amount: 1212,
 			Date:   6,
@@ -94,7 +99,7 @@ func TestTable(t *testing.T) {
 		if err != nil || result != tx {
 			t.Log(err)
 			t.Fatalf(
-				`Search %s did not return %+v but %+v`,
+				`Search "%s" did not return %+v but %+v`,
 				tx.Entity, tx, result,
 			)
 		}

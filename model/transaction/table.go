@@ -14,9 +14,11 @@ func (t *Table) Init() error {
 	_, err := t.DB.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s "+
-				"(%s TEXT NOT NULL, %s INTEGER NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL, "+
+				"(%s INTEGER NOT NULL PRIMARY KEY, "+
+				"%s TEXT NOT NULL, %s INTEGER NOT NULL, %s INTEGER NOT NULL, %s TEXT NOT NULL, "+
 				"UNIQUE(%s,%s,%s,%s))",
 			TableName,
+			IDCol,
 			EntityCol,
 			AmountCol,
 			DateCol,
@@ -119,9 +121,10 @@ func (t *Table) RangeTotal(start, end time.Time) (int, error) {
 func (t *Table) Insert(tx Transaction) error {
 	_, err := t.DB.Exec(
 		fmt.Sprintf(
-			"INSERT INTO %s VALUES (?, ?, ?, ?)",
+			"INSERT INTO %s VALUES (?, ?, ?, ?, ?)",
 			TableName,
 		),
+		tx.ID,
 		tx.Entity,
 		tx.Amount,
 		tx.Date,
@@ -157,7 +160,7 @@ type Rows struct{ *sql.Rows }
 // Scan scans a transaction from the current result set.
 func (r *Rows) Scan() (Transaction, error) {
 	tx := Transaction{}
-	err := r.Rows.Scan(&tx.Entity, &tx.Amount, &tx.Date, &tx.Note)
+	err := r.Rows.Scan(&tx.ID, &tx.Entity, &tx.Amount, &tx.Date, &tx.Note)
 	if err != nil {
 		return Transaction{}, err
 	}
