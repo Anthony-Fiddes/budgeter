@@ -95,7 +95,7 @@ func interactiveAdd(c *CLI) int {
 		}
 	}
 
-	return 1
+	return 0
 }
 
 func add(c *CLI) int {

@@ -49,7 +49,7 @@ func TestTable(t *testing.T) {
 			Note:   "Squirrels are very aggressive",
 		},
 		{
-			ID:     2,
+			ID:     1,
 			Entity: "Frog rebellion",
 			Amount: 30800,
 			Date:   5,
@@ -96,7 +96,7 @@ func TestTable(t *testing.T) {
 
 		rows.Next()
 		result, err := rows.Scan()
-		if err != nil || result != tx {
+		if err != nil || !equal(result, tx) {
 			t.Log(err)
 			t.Fatalf(
 				`Search "%s" did not return %+v but %+v`,
@@ -122,7 +122,7 @@ func TestTable(t *testing.T) {
 		for i := range result {
 			r := result[i]
 			e := expected[i]
-			if r != e {
+			if !equal(r, e) {
 				t.Logf("result transactions: %+v", result)
 				t.Logf("expected transactions: %+v", expected)
 				t.Logf("wrong transaction: %+v", r)

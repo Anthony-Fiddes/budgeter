@@ -121,10 +121,13 @@ func (t *Table) RangeTotal(start, end time.Time) (int, error) {
 func (t *Table) Insert(tx Transaction) error {
 	_, err := t.DB.Exec(
 		fmt.Sprintf(
-			"INSERT INTO %s VALUES (?, ?, ?, ?, ?)",
+			"INSERT INTO %s(%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
 			TableName,
+			EntityCol,
+			AmountCol,
+			DateCol,
+			NoteCol,
 		),
-		tx.ID,
 		tx.Entity,
 		tx.Amount,
 		tx.Date,
