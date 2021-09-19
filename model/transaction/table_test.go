@@ -179,5 +179,18 @@ func TestTable(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
+		rows, err = table.Search("", -1)
+		if err != nil {
+			t.Errorf("unexpected error searching table: %v", err)
+		}
+		remaining, err := rows.ScanSet()
+		if err != nil {
+			t.Errorf("unexpected error scanning rows: %v", err)
+		}
+		if len(remaining) != 0 {
+			t.Log("remaining transactions:")
+			t.Logf("%+v", remaining)
+			t.Errorf("all transactions should have been deleted")
+		}
 	}
 }
