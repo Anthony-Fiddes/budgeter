@@ -1,7 +1,6 @@
 package budgeter
 
 import (
-	"flag"
 	"io"
 	"os"
 	"path/filepath"
@@ -20,10 +19,10 @@ const (
 //
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
-// TODO: write tests
-// TODO: use a transaction so that all of the file is added or none of it is!
 func ingest(c *CLI) int {
-	fs := flag.NewFlagSet(ingestName, flag.ContinueOnError)
+	// TODO: write tests
+	// TODO: use a transaction so that all of the file is added or none of it is!
+	fs := getFlagset(ingestName)
 	err := fs.Parse(c.args)
 	if err != nil {
 		c.logParsingErr(err)

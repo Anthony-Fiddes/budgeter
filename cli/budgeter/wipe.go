@@ -15,14 +15,15 @@ const (
 
 func wipe(c *CLI) int {
 	fs := flag.NewFlagSet(wipeName, flag.ContinueOnError)
+	fs.SetOutput(c.Log.Writer())
 	confirmed := fs.Bool("y", false, "Confirms that the user would like to wipe their budgeting information.")
 	err := fs.Parse(c.args)
 	if err != nil {
-		c.Log.Println(err)
+		// I'm not logging anything because fs does a good enough job on its own
+		// for the wipe command for now.
 		return 1
 	}
 	if len(fs.Args()) > 0 {
-		fs.SetOutput(c.Log.Writer())
 		fs.Usage()
 		c.Log.Println()
 		c.Log.Printf("%s does not take any arguments", wipeName)

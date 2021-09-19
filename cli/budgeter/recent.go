@@ -2,9 +2,7 @@ package budgeter
 
 import (
 	_ "embed"
-	"flag"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
@@ -40,8 +38,7 @@ type recentFlags struct {
 func recent(c *CLI) int {
 	var err error
 	flags := recentFlags{}
-	fs := flag.NewFlagSet(recentName, flag.ContinueOnError)
-	fs.SetOutput(io.Discard)
+	fs := getFlagset(recentName)
 	fs.StringVar(&flags.search, "s", "", "")
 	fs.BoolVar(&flags.flip, "f", false, "")
 	fs.IntVar(&flags.limit, "l", defaultRecentLimit, "")

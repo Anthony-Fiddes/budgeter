@@ -1,7 +1,6 @@
 package budgeter
 
 import (
-	"flag"
 	"strconv"
 
 	_ "embed"
@@ -15,9 +14,11 @@ const (
 var removeUsage string
 
 func remove(c *CLI) int {
-	fs := flag.NewFlagSet(removeName, flag.ContinueOnError)
+	fs := getFlagset(removeName)
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
+		c.Log.Println()
+		c.Log.Print(removeUsage)
 		return 1
 	}
 	args := fs.Args()

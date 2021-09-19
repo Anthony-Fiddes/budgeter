@@ -1,7 +1,6 @@
 package budgeter
 
 import (
-	"flag"
 	"fmt"
 	"time"
 
@@ -12,6 +11,29 @@ import (
 const (
 	addName = "add"
 )
+
+var addUsage = "add doesn't quite have options just yet!"
+
+func add(c *CLI) int {
+	fs := getFlagset(addName)
+	if err := fs.Parse(c.args); err != nil {
+		c.logParsingErr(err)
+		c.Log.Println()
+		c.Log.Print(addUsage)
+		return 1
+	}
+	args := fs.Args()
+	if len(args) == 0 {
+		return interactiveAdd(c)
+	} else if len(args) > fieldsPerRecord {
+		c.Log.Printf("%s takes at most %d arguments", addName, fieldsPerRecord)
+		c.Log.Println()
+		c.Log.Print(addUsage)
+		return 1
+	}
+	// TODO: implement an option that parses from flags or from args
+	return 0
+}
 
 // TODO: Find a way to handle duplicates gracefully
 func interactiveAdd(c *CLI) int {
@@ -95,22 +117,5 @@ func interactiveAdd(c *CLI) int {
 		}
 	}
 
-	return 0
-}
-
-func add(c *CLI) int {
-	fs := flag.NewFlagSet(addName, flag.ContinueOnError)
-	if err := fs.Parse(c.args); err != nil {
-		c.logParsingErr(err)
-		return 1
-	}
-	args := fs.Args()
-	if len(args) == 0 {
-		return interactiveAdd(c)
-	} else if len(args) > fieldsPerRecord {
-		c.Log.Printf("%s takes at most %d arguments", addName, fieldsPerRecord)
-		return 1
-	}
-	// TODO: implement an option that parses from flags or from args
 	return 0
 }

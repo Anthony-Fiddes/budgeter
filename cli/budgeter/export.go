@@ -1,7 +1,6 @@
 package budgeter
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 
@@ -17,7 +16,7 @@ const (
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
 func export(c *CLI) int {
-	fs := flag.NewFlagSet(exportName, flag.ContinueOnError)
+	fs := getFlagset(exportName)
 	err := fs.Parse(c.args)
 	if err != nil {
 		c.logParsingErr(err)

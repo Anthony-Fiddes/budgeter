@@ -1,6 +1,8 @@
 package budgeter
 
 import (
+	"flag"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -12,45 +14,6 @@ import (
 
 //go:embed usage.txt
 var usage string
-
-// period is an enum representing the lengths of time that budgeter allows
-type period int
-
-const (
-	unknown period = iota
-	day
-	week
-	month
-)
-
-func (p period) Unknown() bool {
-	if p <= 0 || p > month {
-		return true
-	}
-	return false
-}
-
-func (p period) String() string {
-	if p < 0 || p > month {
-		return "unknown"
-	}
-	return [...]string{"unknown", "day", "week", "month"}[int(p)]
-}
-
-var periods = map[string]period{
-	unknown.String(): unknown,
-	day.String():     day,
-	week.String():    week,
-	month.String():   month,
-}
-
-func getPeriod(s string) period {
-	p, ok := periods[s]
-	if !ok {
-		return unknown
-	}
-	return p
-}
 
 type Table interface {
 	Insert(transaction.Transaction) error
@@ -127,4 +90,49 @@ func (c *CLI) Run(args []string) int {
 		return 1
 	}
 	return cmd(c)
+}
+
+// period is an enum representing the lengths of time that budgeter allows
+type period int
+
+const (
+	unknown period = iota
+	day
+	week
+	month
+)
+
+func (p period) Unknown() bool {
+	if p <= 0 || p > month {
+		return true
+	}
+	return false
+}
+
+func (p period) String() string {
+	if p < 0 || p > month {
+		return "unknown"
+	}
+	return [...]string{"unknown", "day", "week", "month"}[int(p)]
+}
+
+var periods = map[string]period{
+	unknown.String(): unknown,
+	day.String():     day,
+	week.String():    week,
+	month.String():   month,
+}
+
+func getPeriod(s string) period {
+	p, ok := periods[s]
+	if !ok {
+		return unknown
+	}
+	return p
+}
+
+func getFlagset(commandName string) *flag.FlagSet {
+	fs := flag.NewFlagSet(commandName, flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	return fs
 }
