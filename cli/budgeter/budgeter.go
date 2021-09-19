@@ -55,6 +55,7 @@ func getPeriod(s string) period {
 type Table interface {
 	Insert(transaction.Transaction) error
 	RangeTotal(start, end time.Time) (int, error)
+	Remove(transactionID int) error
 	Search(query string, limit int) (*transaction.Rows, error)
 	Total() (int, error)
 }
@@ -113,6 +114,7 @@ func (c *CLI) Run(args []string) int {
 		limitName:  limit,
 		wipeName:   wipe,
 		recentName: recent,
+		removeName: remove,
 	}
 
 	alias := args[1]

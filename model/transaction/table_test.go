@@ -138,7 +138,7 @@ func TestTable(t *testing.T) {
 			expected += tx.Amount
 		}
 		result, err := table.RangeTotal(time.Unix(5, 0), time.Unix(6, 0))
-		if err != nil {
+		if err != nil || result != expected {
 			t.Logf("result total: %d", result)
 			t.Logf("expected total: %d", expected)
 			t.Logf("expected transactions: %+v", testData[2:])
@@ -148,16 +148,36 @@ func TestTable(t *testing.T) {
 
 	// Total Test
 	{
-		sum := 0
+		expected := 0
 		for _, tx := range testData {
-			sum += tx.Amount
+			expected += tx.Amount
 		}
 		result, err := table.Total()
-		if err != nil {
-			t.Error(err)
+		if err != nil || result != expected {
+			t.Logf("result total: %d", result)
+			t.Logf("expected total: %d", expected)
+			t.Logf("expected transactions: %+v", testData[2:])
+			t.Fatal(err)
 		}
-		if result != sum {
-			t.Errorf("Total did not return %d but %d", sum, result)
+	}
+
+	// Remove Test
+	{
+		rows, err := table.Search("", -1)
+		if err != nil {
+			t.Errorf("unexpected error searching table: %v", err)
+		}
+		transactions, err := rows.ScanSet()
+		if err != nil {
+			t.Errorf("unexpected error scanning rows: %v", err)
+		}
+		for _, tx := range transactions {
+			err = table.Remove(tx.ID)
+			if err != nil {
+				t.Log("could not remove all transactions")
+				t.Logf("erroring transaction: %+v", tx)
+				t.Fatal(err)
+			}
 		}
 	}
 }

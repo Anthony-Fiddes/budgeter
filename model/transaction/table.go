@@ -117,7 +117,8 @@ func (t *Table) RangeTotal(start, end time.Time) (int, error) {
 	return total, nil
 }
 
-// Insert inserts a transaction into the transactions table
+// Insert inserts a transaction into the transactions table. The ID provided by
+// "tx" is ignored, as the database determines the ID.
 func (t *Table) Insert(tx Transaction) error {
 	_, err := t.DB.Exec(
 		fmt.Sprintf(
@@ -155,6 +156,26 @@ func (t *Table) Total() (int, error) {
 		return 0, fmt.Errorf("transaction: could not query database for total: %w", err)
 	}
 	return total, nil
+}
+
+// Remove deletes the given transaction from the table.
+func (t *Table) Remove(transactionID int) error {
+	_, err := t.DB.Exec(
+		fmt.Sprintf(
+			"DELETE FROM %s WHERE %s=?",
+			TableName,
+			IDCol,
+		),
+		transactionID,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"transaction: could not remove transaction #%d: %w",
+			transactionID,
+			err,
+		)
+	}
+	return nil
 }
 
 // Rows wraps *sql.Rows to easily scan Transactions from a DB

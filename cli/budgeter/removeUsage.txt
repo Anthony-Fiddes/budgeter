@@ -1,0 +1,4 @@
+Remove deletes one of your transactions.
+
+Usage: remove <ID>
+    ID is the ID of the transaction that you would like to delete.
