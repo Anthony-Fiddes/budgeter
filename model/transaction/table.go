@@ -99,7 +99,7 @@ func (t *Table) RangeTotal(start, end time.Time) (int, error) {
 	stopUnix := end.UTC().Unix()
 	row := t.DB.QueryRow(
 		fmt.Sprintf(
-			"SELECT SUM(%s) FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s ASC",
+			"SELECT COALESCE(SUM(%s), 0) FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s ASC",
 			AmountCol,
 			TableName,
 			DateCol,
@@ -112,7 +112,7 @@ func (t *Table) RangeTotal(start, end time.Time) (int, error) {
 	var total int
 	err := row.Scan(&total)
 	if err != nil {
-		return 0, fmt.Errorf("could not get total: %w", err)
+		return 0, fmt.Errorf("could not get total from %s to %s: %w", start, end, err)
 	}
 	return total, nil
 }
@@ -145,7 +145,7 @@ func (t *Table) Insert(tx Transaction) error {
 func (t *Table) Total() (int, error) {
 	row := t.DB.QueryRow(
 		fmt.Sprintf(
-			"SELECT sum(%s) FROM %s",
+			"SELECT COALESCE(SUM(%s), 0) FROM %s",
 			AmountCol,
 			TableName,
 		),

@@ -144,6 +144,16 @@ func TestTable(t *testing.T) {
 			t.Logf("expected transactions: %+v", testData[2:])
 			t.Fatal(err)
 		}
+
+		// RangeTotal should return 0 if it selects no rows
+		expected = 0
+		result, err = table.RangeTotal(time.Unix(-1000, 0), time.Unix(-1000, 0))
+		if err != nil || result != expected {
+			t.Logf("result total: %d", result)
+			t.Logf("expected total: %d", expected)
+			t.Logf("expected transactions: %+v", testData[2:])
+			t.Fatal(err)
+		}
 	}
 
 	// Total Test
