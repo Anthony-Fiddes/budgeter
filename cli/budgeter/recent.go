@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Anthony-Fiddes/budgeter/internal/month"
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 	"github.com/cheynewallace/tabby"
 )
@@ -19,7 +20,6 @@ const (
 	entityHeader       = "Entity"
 	amountHeader       = "Amount"
 	noteHeader         = "Note"
-	totalTemplate      = "Total: %s"
 )
 
 //go:embed recentUsage.txt
@@ -32,9 +32,8 @@ type recentFlags struct {
 }
 
 // recent lists the most recently added transactions.
-// TODO: Show SQLite IDs so that I can reference transactions?
-// otherwise maybe a hash?
 // TODO: Add a "pinned" feature/subcommand?
+// TODO: Add a total for searches
 func recent(c *CLI) int {
 	var err error
 	flags := recentFlags{}
@@ -84,29 +83,20 @@ func recent(c *CLI) int {
 	tab.Print()
 
 	if flags.search == "" {
-		total, err := c.Transactions.Total()
-		if err != nil {
-			c.Log.Println(err)
-			return 1
-		}
-		totalString := fmt.Sprintf(totalTemplate, transaction.Dollars(total))
-		for i := 0; i < len(totalString); i++ {
-			fmt.Print("=")
-		}
-		fmt.Println()
-		fmt.Println(totalString)
-
 		// TODO: make this configurable with limit subcommand
 		// TODO: maybe add a test for this since it was buggy before?
 		now := time.Now().UTC()
-		monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-		oneMonthSpending, err := c.Transactions.RangeTotal(monthStart, now)
+		monthTotal, err := c.Transactions.RangeTotal(month.Start(now), now)
 		if err != nil {
 			c.Log.Println(err)
 			return 1
 		}
-		fmt.Printf("Current Month: %s", transaction.Dollars(oneMonthSpending))
+		totalStr := fmt.Sprintf("Current Month: %s", transaction.Dollars(monthTotal))
+		for i := 0; i < len(totalStr); i++ {
+			fmt.Print("=")
+		}
+		fmt.Println()
+		fmt.Println(totalStr)
 	}
-	fmt.Println()
 	return 0
 }
