@@ -12,7 +12,7 @@ import (
 const (
 	recentName = "recent"
 	// defaultRecentLimit specifies the default number of items to receive when
-	// the command is called
+	// the recent command is called
 	defaultRecentLimit = 20
 	idHeader           = "ID"
 	dateHeader         = "Date"

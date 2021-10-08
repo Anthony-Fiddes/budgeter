@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
+	"github.com/Anthony-Fiddes/budgeter/internal/period"
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
@@ -43,8 +44,8 @@ func limit(c *CLI) int {
 		return 1
 	}
 	args[1] = inpt.Normalize(args[1])
-	per := getPeriod(args[1])
-	if per == unknown {
+	per := period.Get(args[1])
+	if per == period.Unknown {
 		c.Log.Printf("invalid period \"%s\"", args[1])
 		c.Log.Println()
 		c.Log.Println(limitUsage)
@@ -64,7 +65,7 @@ func limit(c *CLI) int {
 
 // setBudget stores the budget amount and period in a human readable format in the app's
 // config store.
-func (c *CLI) setBudget(cents int, p period) error {
+func (c *CLI) setBudget(cents int, p period.Period) error {
 	budget := fmt.Sprintf("%s%s%s", transaction.Dollars(cents), budgetSep, p.String())
 	err := c.Config.Put(budgetKey, budget)
 	if err != nil {
@@ -76,22 +77,22 @@ func (c *CLI) setBudget(cents int, p period) error {
 // getBudget returns the user's specified budgeting limit in cents per period.
 //
 // e.g. 10000 cents / week
-func (c *CLI) getBudget() (int, period, error) {
+func (c *CLI) getBudget() (int, period.Period, error) {
 	budgetStr, err := c.Config.Get(budgetKey)
 	if err != nil {
-		return 0, unknown, fmt.Errorf("could not get budget: %w", err)
+		return 0, period.Unknown, fmt.Errorf("could not get budget: %w", err)
 	}
 	budget := strings.SplitN(budgetStr, budgetSep, 1)
 	if len(budget) != 2 {
-		return 0, unknown, fmt.Errorf("budget (%s) is formatted improperly (should be \"{{dollars}}/{{period}}\"): %w", budgetStr, err)
+		return 0, period.Unknown, fmt.Errorf("budget (%s) is formatted improperly (should be \"{{dollars}}/{{period}}\"): %w", budgetStr, err)
 	}
 	cents, err := transaction.Cents(budget[0])
 	if err != nil {
-		return 0, unknown, err
+		return 0, period.Unknown, err
 	}
-	period := getPeriod(budget[1])
-	if period.Unknown() {
-		return 0, unknown, fmt.Errorf("unknown period \"%s\"", budget[1])
+	per := period.Get(budget[1])
+	if per.Unknown() {
+		return 0, period.Unknown, fmt.Errorf("unknown period \"%s\"", budget[1])
 	}
-	return cents, period, nil
+	return cents, per, nil
 }

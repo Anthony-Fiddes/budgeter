@@ -1,0 +1,3 @@
+Report how much you spent in the last few months.
+
+Usage: report
