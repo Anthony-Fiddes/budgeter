@@ -52,6 +52,7 @@ func report(c *CLI) int {
 
 	var totals []total
 	start := month.Start(time.Now().UTC())
+	start = month.Add(start, -defaultReportMonths+1)
 	for i := 0; i < defaultReportMonths; i++ {
 		end := month.End(start)
 		amount, err := c.Transactions.RangeTotal(start, end)
@@ -62,7 +63,7 @@ func report(c *CLI) int {
 			return 1
 		}
 		totals = append(totals, total{month: start.Month(), amount: amount})
-		start = month.Add(start, -1)
+		start = month.Add(start, 1)
 	}
 
 	fmt.Println(sPrintTotals(totals))
