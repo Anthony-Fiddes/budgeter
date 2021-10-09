@@ -10,31 +10,32 @@ import (
 	"github.com/cheynewallace/tabby"
 )
 
-const (
-	recentName = "recent"
-	// defaultRecentLimit specifies the default number of items to receive when
-	// the recent command is called
-	defaultRecentLimit = 20
-	idHeader           = "ID"
-	dateHeader         = "Date"
-	entityHeader       = "Entity"
-	amountHeader       = "Amount"
-	noteHeader         = "Note"
-)
+const recentName = "recent"
 
 //go:embed recentUsage.txt
 var recentUsage string
-
-type recentFlags struct {
-	limit  int
-	search string
-	flip   bool
-}
 
 // recent lists the most recently added transactions.
 // TODO: Add a "pinned" feature/subcommand?
 // TODO: Add a total for searches
 func recent(c *CLI) int {
+	type recentFlags struct {
+		limit  int
+		search string
+		flip   bool
+	}
+
+	const (
+		// defaultRecentLimit specifies the default number of items to receive when
+		// the recent command is called
+		defaultRecentLimit = 20
+		idHeader           = "ID"
+		dateHeader         = "Date"
+		entityHeader       = "Entity"
+		amountHeader       = "Amount"
+		noteHeader         = "Note"
+	)
+
 	var err error
 	flags := recentFlags{}
 	fs := getFlagset(recentName)

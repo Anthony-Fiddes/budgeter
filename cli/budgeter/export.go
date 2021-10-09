@@ -7,9 +7,7 @@ import (
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
-const (
-	exportName = "export"
-)
+const exportName = "export"
 
 // export writes all of the transactions in the given table to the given file name.
 //

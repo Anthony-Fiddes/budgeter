@@ -33,16 +33,16 @@ type Store interface {
 
 type CLI struct {
 	args []string
-	// Config a store where CLI can persist data in a key, value format.
+	// Config is a store where CLI can persist data in a key, value format.
 	Config Store
 	// DBPath is the filepath for the datastore being used. It does not have a
-	// default, i.e. it must be set.
+	// default, so it must be set.
 	DBPath string
 	// Log is used by CLI to log errors. By default, it writes to stderr with no
 	// date prefix.
 	Log *log.Logger
 	// Transactions is a Transactions table, it allows the CLI app to interact
-	// with a store of transactions.
+	// with a store of transactions. It does not have a default, so it must be set.
 	Transactions Table
 }
 

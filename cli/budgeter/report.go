@@ -12,18 +12,17 @@ import (
 	"github.com/cheynewallace/tabby"
 )
 
-const (
-	reportName = "report"
-	// defaultReportMonths determines how many months to query for when calling
-	// the report command.
-	defaultReportMonths = 6
-)
+const reportName = "report"
 
 //go:embed reportUsage.txt
 var reportUsage string
 
 // report tells the user how much they've spent over the last few months.
 func report(c *CLI) int {
+	// defaultReportMonths determines how many months to query for when calling
+	// the report command.
+	const defaultReportMonths = 6
+
 	if len(c.args) != 0 {
 		c.Log.Printf("%s takes no arguments", reportName)
 		c.Log.Println()
