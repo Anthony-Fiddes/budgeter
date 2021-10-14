@@ -10,21 +10,26 @@ import (
 	"github.com/cheynewallace/tabby"
 )
 
-const recentName = "recent"
+type recent struct {
+	limit  int
+	search string
+	flip   bool
+}
 
 //go:embed recentUsage.txt
 var recentUsage string
 
+// recentName is a const because it is used as a suggestion in remove.
+const recentName = "recent"
+
+func (r *recent) Name() string {
+	return recentName
+}
+
 // recent lists the most recently added transactions.
 // TODO: Add a "pinned" feature/subcommand?
 // TODO: Add a total for searches
-func recent(c *CLI) int {
-	type recentFlags struct {
-		limit  int
-		search string
-		flip   bool
-	}
-
+func (r *recent) Run(c *CLI) int {
 	const (
 		// defaultRecentLimit specifies the default number of items to receive when
 		// the recent command is called
@@ -37,11 +42,10 @@ func recent(c *CLI) int {
 	)
 
 	var err error
-	flags := recentFlags{}
-	fs := getFlagset(recentName)
-	fs.StringVar(&flags.search, "s", "", "")
-	fs.BoolVar(&flags.flip, "f", false, "")
-	fs.IntVar(&flags.limit, "l", defaultRecentLimit, "")
+	fs := getFlagset(r.Name())
+	fs.StringVar(&r.search, "s", "", "")
+	fs.BoolVar(&r.flip, "f", false, "")
+	fs.IntVar(&r.limit, "l", defaultRecentLimit, "")
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
 		c.Log.Println()
@@ -51,11 +55,11 @@ func recent(c *CLI) int {
 	fs.Usage()
 	args := fs.Args()
 	if len(args) > 0 {
-		c.Log.Printf("%s takes no arguments", recentName)
+		c.Log.Printf("%s takes no arguments", r.Name())
 		return 1
 	}
 
-	rows, err := c.Transactions.Search(flags.search, flags.limit)
+	rows, err := c.Transactions.Search(r.search, r.limit)
 	if err != nil {
 		c.Log.Println(err)
 		return 1
@@ -70,7 +74,7 @@ func recent(c *CLI) int {
 	tab.AddHeader(idHeader, dateHeader, entityHeader, amountHeader, noteHeader)
 	for i := 0; i < len(transactions); i++ {
 		index := i
-		if !flags.flip {
+		if !r.flip {
 			index = len(transactions) - 1 - index
 		}
 		tx := transactions[index]
@@ -83,7 +87,7 @@ func recent(c *CLI) int {
 	}
 	tab.Print()
 
-	if flags.search == "" {
+	if r.search == "" {
 		// TODO: make this configurable with limit subcommand
 		// TODO: maybe add a test for this since it was buggy before?
 		now := time.Now().UTC()

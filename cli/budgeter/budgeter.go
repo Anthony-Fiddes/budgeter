@@ -46,9 +46,14 @@ type CLI struct {
 	Transactions Table
 }
 
-// A command performs a budgeting action using the configured CLI. It returns an
+type command interface {
+	Name() string
+	Run(*CLI) int
+}
+
+// A commandFunc performs a budgeting action using the configured CLI. It returns an
 // error code. A nonzero code is an error.
-type command func(c *CLI) int
+type commandFunc func(c *CLI) int
 
 // Run runs the budgeter CLI with the given arguments.
 //
@@ -69,14 +74,13 @@ func (c *CLI) Run(args []string) int {
 		return 1
 	}
 
-	commands := map[string]command{
+	commands := map[string]commandFunc{
 		addName:    add,
 		backupName: backup,
 		exportName: export,
 		ingestName: ingest,
 		limitName:  limit,
 		wipeName:   wipe,
-		recentName: recent,
 		removeName: remove,
 		reportName: report,
 	}
@@ -85,6 +89,12 @@ func (c *CLI) Run(args []string) int {
 	c.args = args[2:]
 	cmd, ok := commands[alias]
 	if !ok {
+		cmds := []command{&recent{}}
+		for _, cmd := range cmds {
+			if cmd.Name() == alias {
+				return cmd.Run(c)
+			}
+		}
 		c.Log.Printf("command \"%s\" does not exist", alias)
 		c.Log.Println()
 		c.Log.Println(usage)
