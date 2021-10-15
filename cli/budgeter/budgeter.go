@@ -36,7 +36,8 @@ type CLI struct {
 	// Config is a store where CLI can persist data in a key, value format.
 	Config Store
 	// DBPath is the filepath for the datastore being used. It does not have a
-	// default, so it must be set.
+	// default, so it must be set. The wipe and backup commands currently assume
+	// that the database is stored in a local file.
 	DBPath string
 	// Err is used by CLI to log errors. By default, it writes to stderr with no
 	// date prefix.
