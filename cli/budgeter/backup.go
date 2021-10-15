@@ -14,15 +14,15 @@ var backupUsage string
 
 func backup(c *CLI) int {
 	if len(c.args) != 1 {
-		c.Err.Printf("%s only takes one argument", backupName)
-		c.Err.Println()
-		c.Err.Println(backupUsage)
+		c.err.Printf("%s only takes one argument", backupName)
+		c.err.Println()
+		c.err.Println(backupUsage)
 		return 1
 	}
 
 	dbFile, err := os.Open(c.DBPath)
 	if err != nil {
-		c.Err.Printf("error opening \"%s\" to read: %v", c.DBPath, err)
+		c.err.Printf("error opening \"%s\" to read: %v", c.DBPath, err)
 		return 1
 	}
 	// TODO: make some consideration for the case where a file is already present.
@@ -30,12 +30,12 @@ func backup(c *CLI) int {
 	targetPath := c.args[0]
 	target, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		c.Err.Printf("error opening \"%s\" to write: %v", targetPath, err)
+		c.err.Printf("error opening \"%s\" to write: %v", targetPath, err)
 		return 1
 	}
 	_, err = io.Copy(target, dbFile)
 	if err != nil {
-		c.Err.Printf("error writing backup to \"%s\": %v", targetPath, err)
+		c.err.Printf("error writing backup to \"%s\": %v", targetPath, err)
 		return 1
 	}
 	return 0

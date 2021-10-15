@@ -48,25 +48,25 @@ func (r *recent) Run(c *CLI) int {
 	fs.IntVar(&r.limit, "l", defaultRecentLimit, "")
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
-		c.Err.Println()
-		c.Err.Println(recentUsage)
+		c.err.Println()
+		c.err.Println(recentUsage)
 		return 1
 	}
 	fs.Usage()
 	args := fs.Args()
 	if len(args) > 0 {
-		c.Err.Printf("%s takes no arguments", r.Name())
+		c.err.Printf("%s takes no arguments", r.Name())
 		return 1
 	}
 
 	rows, err := c.Transactions.Search(r.search, r.limit)
 	if err != nil {
-		c.Err.Println(err)
+		c.err.Println(err)
 		return 1
 	}
 	transactions, err := rows.ScanSet()
 	if err != nil {
-		c.Err.Println(err)
+		c.err.Println(err)
 		return 1
 	}
 
@@ -93,7 +93,7 @@ func (r *recent) Run(c *CLI) int {
 		now := time.Now().UTC()
 		monthTotal, err := c.Transactions.RangeTotal(month.Start(now), now)
 		if err != nil {
-			c.Err.Println(err)
+			c.err.Println(err)
 			return 1
 		}
 		totalStr := fmt.Sprintf("Current Month: %s", transaction.Dollars(monthTotal))

@@ -24,9 +24,9 @@ func report(c *CLI) int {
 	const defaultReportMonths = 6
 
 	if len(c.args) != 0 {
-		c.Err.Printf("%s takes no arguments", reportName)
-		c.Err.Println()
-		c.Err.Println(reportUsage)
+		c.err.Printf("%s takes no arguments", reportName)
+		c.err.Println()
+		c.err.Println(reportUsage)
 		return 1
 	}
 
@@ -56,9 +56,9 @@ func report(c *CLI) int {
 		end := month.End(start)
 		amount, err := c.Transactions.RangeTotal(start, end)
 		if err != nil {
-			c.Err.Printf("could not get totals for all of the requested months: %v", err)
-			c.Err.Println("correctly collected totals: ")
-			c.Err.Println(sPrintTotals(totals))
+			c.err.Printf("could not get totals for all of the requested months: %v", err)
+			c.err.Println("correctly collected totals: ")
+			c.err.Println(sPrintTotals(totals))
 			return 1
 		}
 		totals = append(totals, total{month: start.Month(), amount: amount})

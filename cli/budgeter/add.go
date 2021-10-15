@@ -21,17 +21,17 @@ func (a *add) Run(c *CLI) int {
 	fs := getFlagset(a.Name())
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
-		c.Err.Println()
-		c.Err.Print(addUsage)
+		c.err.Println()
+		c.err.Print(addUsage)
 		return 1
 	}
 	args := fs.Args()
 	if len(args) == 0 {
 		return interactiveAdd(c)
 	} else if len(args) > fieldsPerRecord {
-		c.Err.Printf("%s takes at most %d arguments", a.Name(), fieldsPerRecord)
-		c.Err.Println()
-		c.Err.Print(addUsage)
+		c.err.Printf("%s takes at most %d arguments", a.Name(), fieldsPerRecord)
+		c.err.Println()
+		c.err.Print(addUsage)
 		return 1
 	}
 	// TODO: implement an option that parses from flags or from args
@@ -98,11 +98,11 @@ func interactiveAdd(c *CLI) int {
 	for {
 		tx, err := getTransaction()
 		if err != nil {
-			c.Err.Println(err)
+			c.err.Println(err)
 			return 1
 		}
 		if err := c.Transactions.Insert(tx); err != nil {
-			c.Err.Println(err)
+			c.err.Println(err)
 			return 1
 		}
 
@@ -112,7 +112,7 @@ func interactiveAdd(c *CLI) int {
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
 		if err != nil {
-			c.Err.Println(err)
+			c.err.Println(err)
 			return 1
 		}
 		if !confirmed {

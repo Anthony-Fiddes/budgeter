@@ -31,7 +31,7 @@ func ingest(c *CLI) int {
 
 	args := fs.Args()
 	if len(args) != 1 {
-		c.Err.Printf("%s takes one argument", ingestName)
+		c.err.Printf("%s takes one argument", ingestName)
 		return 1
 	}
 
@@ -41,7 +41,7 @@ func ingest(c *CLI) int {
 	case extCSV:
 		f, err := os.Open(filePath)
 		if err != nil {
-			c.Err.Printf("could not open \"%s\": %v", filePath, err)
+			c.err.Printf("could not open \"%s\": %v", filePath, err)
 			return 1
 		}
 		defer f.Close()
@@ -53,20 +53,20 @@ func ingest(c *CLI) int {
 				if err == io.EOF {
 					break
 				}
-				c.Err.Println(err)
+				c.err.Println(err)
 				return 1
 			}
 			err = c.Transactions.Insert(tx)
 			if err != nil {
-				c.Err.Println(err)
+				c.err.Println(err)
 				return 1
 			}
 		}
 	case "":
-		c.Err.Println("no file type specified")
+		c.err.Println("no file type specified")
 		return 1
 	default:
-		c.Err.Println("unsupported file type")
+		c.err.Println("unsupported file type")
 		return 1
 	}
 

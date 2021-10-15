@@ -15,7 +15,7 @@ const (
 
 func wipe(c *CLI) int {
 	fs := flag.NewFlagSet(wipeName, flag.ContinueOnError)
-	fs.SetOutput(c.Err.Writer())
+	fs.SetOutput(c.err.Writer())
 	confirmed := fs.Bool("y", false, "Confirms that the user would like to wipe their budgeting information.")
 	err := fs.Parse(c.args)
 	if err != nil {
@@ -25,8 +25,8 @@ func wipe(c *CLI) int {
 	}
 	if len(fs.Args()) > 0 {
 		fs.Usage()
-		c.Err.Println()
-		c.Err.Printf("%s does not take any arguments", wipeName)
+		c.err.Println()
+		c.err.Printf("%s does not take any arguments", wipeName)
 		return 1
 	}
 	if *confirmed {
@@ -36,7 +36,7 @@ func wipe(c *CLI) int {
 	fmt.Print("This will delete your budgeting information. Are you sure you want to continue? (y/[n]) ")
 	*confirmed, err = inpt.Confirm()
 	if err != nil {
-		c.Err.Println(err)
+		c.err.Println(err)
 		return 1
 	}
 	if !*confirmed {
@@ -48,7 +48,7 @@ func wipe(c *CLI) int {
 
 func wipeDB(c *CLI) int {
 	if err := os.Remove(c.DBPath); err != nil {
-		c.Err.Printf("could not wipe database: %v", err)
+		c.err.Printf("could not wipe database: %v", err)
 		return 1
 	}
 	fmt.Println("Done. All budgeting information deleted.")

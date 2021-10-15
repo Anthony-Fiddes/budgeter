@@ -40,7 +40,8 @@ type CLI struct {
 	DBPath string
 	// Err is used by CLI to log errors. By default, it writes to stderr with no
 	// date prefix.
-	Err *log.Logger
+	Err io.Writer
+	err *log.Logger
 	// Transactions is a Transactions table, it allows the CLI app to interact
 	// with a store of transactions. It does not have a default, so it must be set.
 	Transactions Table
@@ -66,11 +67,11 @@ func (c *CLI) Run(args []string) int {
 		panic("budgeter: Transactions must be set on CLI")
 	}
 	if c.Err == nil {
-		c.Err = log.New(os.Stderr, "", 0)
+		c.err = log.New(os.Stderr, "", 0)
 	}
 
 	if len(args) < 2 {
-		c.Err.Println(usage)
+		c.err.Println(usage)
 		return 1
 	}
 
@@ -94,9 +95,9 @@ func (c *CLI) Run(args []string) int {
 				return cmd.Run(c)
 			}
 		}
-		c.Err.Printf("command \"%s\" does not exist", alias)
-		c.Err.Println()
-		c.Err.Println(usage)
+		c.err.Printf("command \"%s\" does not exist", alias)
+		c.err.Println()
+		c.err.Println(usage)
 		return 1
 	}
 	return cmd(c)

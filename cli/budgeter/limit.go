@@ -24,15 +24,15 @@ func limit(c *CLI) int {
 	err := fs.Parse(c.args)
 	if err != nil {
 		c.logParsingErr(err)
-		c.Err.Println()
-		c.Err.Println(limitUsage)
+		c.err.Println()
+		c.err.Println(limitUsage)
 		return 1
 	}
 	args := fs.Args()
 	if len(args) != 2 {
-		c.Err.Printf("%s takes two arguments", exportName)
-		c.Err.Println()
-		c.Err.Println(limitUsage)
+		c.err.Printf("%s takes two arguments", exportName)
+		c.err.Println()
+		c.err.Println(limitUsage)
 		return 1
 	}
 
@@ -40,15 +40,15 @@ func limit(c *CLI) int {
 	args[0] = inpt.Normalize(args[0])
 	amount, err := transaction.Cents(args[0])
 	if err != nil {
-		c.Err.Println(err)
+		c.err.Println(err)
 		return 1
 	}
 	args[1] = inpt.Normalize(args[1])
 	per := period.Get(args[1])
 	if per == period.Unknown {
-		c.Err.Printf("invalid period \"%s\"", args[1])
-		c.Err.Println()
-		c.Err.Println(limitUsage)
+		c.err.Printf("invalid period \"%s\"", args[1])
+		c.err.Println()
+		c.err.Println(limitUsage)
 		return 1
 	}
 
@@ -56,7 +56,7 @@ func limit(c *CLI) int {
 	// config store.
 	err = c.setBudget(amount, per)
 	if err != nil {
-		c.Err.Println(err)
+		c.err.Println(err)
 		return 1
 	}
 
