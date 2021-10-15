@@ -38,9 +38,9 @@ type CLI struct {
 	// DBPath is the filepath for the datastore being used. It does not have a
 	// default, so it must be set.
 	DBPath string
-	// Log is used by CLI to log errors. By default, it writes to stderr with no
+	// Err is used by CLI to log errors. By default, it writes to stderr with no
 	// date prefix.
-	Log *log.Logger
+	Err *log.Logger
 	// Transactions is a Transactions table, it allows the CLI app to interact
 	// with a store of transactions. It does not have a default, so it must be set.
 	Transactions Table
@@ -65,17 +65,16 @@ func (c *CLI) Run(args []string) int {
 	if c.Transactions == nil {
 		panic("budgeter: Transactions must be set on CLI")
 	}
-	if c.Log == nil {
-		c.Log = log.New(os.Stderr, "", 0)
+	if c.Err == nil {
+		c.Err = log.New(os.Stderr, "", 0)
 	}
 
 	if len(args) < 2 {
-		c.Log.Println(usage)
+		c.Err.Println(usage)
 		return 1
 	}
 
 	commands := map[string]commandFunc{
-		addName:    add,
 		backupName: backup,
 		exportName: export,
 		ingestName: ingest,
@@ -89,15 +88,15 @@ func (c *CLI) Run(args []string) int {
 	c.args = args[2:]
 	cmd, ok := commands[alias]
 	if !ok {
-		cmds := []command{&recent{}}
+		cmds := []command{&add{}, &recent{}}
 		for _, cmd := range cmds {
 			if cmd.Name() == alias {
 				return cmd.Run(c)
 			}
 		}
-		c.Log.Printf("command \"%s\" does not exist", alias)
-		c.Log.Println()
-		c.Log.Println(usage)
+		c.Err.Printf("command \"%s\" does not exist", alias)
+		c.Err.Println()
+		c.Err.Println(usage)
 		return 1
 	}
 	return cmd(c)

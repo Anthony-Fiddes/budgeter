@@ -8,27 +8,30 @@ import (
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
-const (
-	addName = "add"
-)
-
 var addUsage = "add doesn't quite have options just yet!"
 
-func add(c *CLI) int {
-	fs := getFlagset(addName)
+type add struct {
+}
+
+func (a *add) Name() string {
+	return "add"
+}
+
+func (a *add) Run(c *CLI) int {
+	fs := getFlagset(a.Name())
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
-		c.Log.Println()
-		c.Log.Print(addUsage)
+		c.Err.Println()
+		c.Err.Print(addUsage)
 		return 1
 	}
 	args := fs.Args()
 	if len(args) == 0 {
 		return interactiveAdd(c)
 	} else if len(args) > fieldsPerRecord {
-		c.Log.Printf("%s takes at most %d arguments", addName, fieldsPerRecord)
-		c.Log.Println()
-		c.Log.Print(addUsage)
+		c.Err.Printf("%s takes at most %d arguments", a.Name(), fieldsPerRecord)
+		c.Err.Println()
+		c.Err.Print(addUsage)
 		return 1
 	}
 	// TODO: implement an option that parses from flags or from args
@@ -95,11 +98,11 @@ func interactiveAdd(c *CLI) int {
 	for {
 		tx, err := getTransaction()
 		if err != nil {
-			c.Log.Println(err)
+			c.Err.Println(err)
 			return 1
 		}
 		if err := c.Transactions.Insert(tx); err != nil {
-			c.Log.Println(err)
+			c.Err.Println(err)
 			return 1
 		}
 
@@ -109,7 +112,7 @@ func interactiveAdd(c *CLI) int {
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
 		if err != nil {
-			c.Log.Println(err)
+			c.Err.Println(err)
 			return 1
 		}
 		if !confirmed {

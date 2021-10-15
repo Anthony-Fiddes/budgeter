@@ -23,7 +23,7 @@ func export(c *CLI) int {
 
 	args := fs.Args()
 	if len(args) != 1 {
-		c.Log.Printf("%s takes one argument", exportName)
+		c.Err.Printf("%s takes one argument", exportName)
 		return 1
 	}
 
@@ -31,14 +31,14 @@ func export(c *CLI) int {
 	fileType := filepath.Ext(filePath)
 	rows, err := c.Transactions.Search("", -1)
 	if err != nil {
-		c.Log.Println(err)
+		c.Err.Println(err)
 		return 1
 	}
 	switch fileType {
 	case extCSV:
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			c.Log.Println(err)
+			c.Err.Println(err)
 			return 1
 		}
 		defer f.Close()
@@ -47,17 +47,17 @@ func export(c *CLI) int {
 		for rows.Next() {
 			tx, err := rows.Scan()
 			if err != nil {
-				c.Log.Println(err)
+				c.Err.Println(err)
 				return 1
 			}
 			cw.Write(tx)
 		}
 		cw.Flush()
 	case "":
-		c.Log.Println("no file type specified")
+		c.Err.Println("no file type specified")
 		return 1
 	default:
-		c.Log.Println("unsupported file type")
+		c.Err.Println("unsupported file type")
 		return 1
 	}
 
