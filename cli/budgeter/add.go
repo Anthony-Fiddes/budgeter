@@ -11,6 +11,8 @@ import (
 var addUsage = "add doesn't quite have options just yet!"
 
 type add struct {
+	*CLI
+	lastDate string
 }
 
 func (a *add) Name() string {
@@ -18,6 +20,7 @@ func (a *add) Name() string {
 }
 
 func (a *add) Run(c *CLI) int {
+	a.CLI = c
 	fs := getFlagset(a.Name())
 	if err := fs.Parse(c.args); err != nil {
 		c.logParsingErr(err)
@@ -27,7 +30,7 @@ func (a *add) Run(c *CLI) int {
 	}
 	args := fs.Args()
 	if len(args) == 0 {
-		return interactiveAdd(c)
+		return a.interactiveAdd()
 	} else if len(args) > fieldsPerRecord {
 		c.err.Printf("%s takes at most %d arguments", a.Name(), fieldsPerRecord)
 		c.err.Println()
@@ -39,80 +42,27 @@ func (a *add) Run(c *CLI) int {
 }
 
 // TODO: Find a way to handle duplicates gracefully
-func interactiveAdd(c *CLI) int {
-	getField := func(field string) (string, error) {
-		fmt.Printf("%s: ", field)
-		response, err := inpt.Line()
-		if err != nil {
-			return "", err
-		}
-		return response, err
-	}
-
-	lastDate := time.Now().Format(transaction.DateLayout)
-	getDate := func() (int64, error) {
-		fmt.Printf("%s [%s]: ", transaction.DateCol, lastDate)
-		response, err := inpt.Line()
-		if err != nil {
-			return 0, err
-		}
-		if response == "" {
-			response = lastDate
-		}
-		date, err := transaction.Date(response)
-		if err != nil {
-			return 0, err
-		}
-		lastDate = response
-		return date, err
-	}
-
+func (a *add) interactiveAdd() int {
 	// TODO: allow short dates like "21" or "6/21" that
 	// default to this month or year
-	getTransaction := func() (transaction.Transaction, error) {
-		var err error
-		tx := transaction.Transaction{}
-		tx.Date, err = getDate()
-		if err != nil {
-			return transaction.Transaction{}, err
-		}
-		tx.Entity, err = getField(transaction.EntityCol)
-		if err != nil {
-			return transaction.Transaction{}, err
-		}
-		amount, err := getField(transaction.AmountCol)
-		if err != nil {
-			return transaction.Transaction{}, err
-		}
-		tx.Amount, err = transaction.Cents(amount)
-		if err != nil {
-			return transaction.Transaction{}, err
-		}
-		tx.Note, err = getField(transaction.NoteCol)
-		if err != nil {
-			return transaction.Transaction{}, err
-		}
-		return tx, nil
-	}
-
 	for {
-		tx, err := getTransaction()
+		tx, err := a.getTransaction()
 		if err != nil {
-			c.err.Println(err)
+			a.err.Println(err)
 			return 1
 		}
-		if err := c.Transactions.Insert(tx); err != nil {
-			c.err.Println(err)
+		if err := a.Transactions.Insert(tx); err != nil {
+			a.err.Println(err)
 			return 1
 		}
 
 		// TODO: Add context when adding transactions. e.g. making the last
 		// used date the new default?, enabling an undo command
-		fmt.Print("\nWould you like to add another transaction? (y/[n]) ")
+		fmt.Fprint(a.Out, "\nWould you like to add another transaction? (y/[n]) ")
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
 		if err != nil {
-			c.err.Println(err)
+			a.err.Println(err)
 			return 1
 		}
 		if !confirmed {
@@ -121,4 +71,59 @@ func interactiveAdd(c *CLI) int {
 	}
 
 	return 0
+}
+
+func (a *add) getField(field string) (string, error) {
+	fmt.Fprintf(a.Out, "%s: ", field)
+	response, err := a.in.Line()
+	if err != nil {
+		return "", err
+	}
+	return response, err
+}
+
+func (a *add) getDate() (int64, error) {
+	if a.lastDate == "" {
+		a.lastDate = time.Now().Format(transaction.DateLayout)
+	}
+	fmt.Fprintf(a.Out, "%s [%s]: ", transaction.DateCol, a.lastDate)
+	response, err := a.in.Line()
+	if err != nil {
+		return 0, err
+	}
+	if response == "" {
+		response = a.lastDate
+	}
+	date, err := transaction.Date(response)
+	if err != nil {
+		return 0, err
+	}
+	a.lastDate = response
+	return date, err
+}
+
+func (a *add) getTransaction() (transaction.Transaction, error) {
+	var err error
+	tx := transaction.Transaction{}
+	tx.Date, err = a.getDate()
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	tx.Entity, err = a.getField(transaction.EntityCol)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	amount, err := a.getField(transaction.AmountCol)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	tx.Amount, err = transaction.Cents(amount)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	tx.Note, err = a.getField(transaction.NoteCol)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	return tx, nil
 }
