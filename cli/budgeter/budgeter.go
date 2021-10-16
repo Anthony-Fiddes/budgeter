@@ -9,6 +9,7 @@ import (
 
 	_ "embed"
 
+	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
@@ -43,6 +44,11 @@ type CLI struct {
 	// date prefix.
 	Err io.Writer
 	err *log.Logger
+	// In is the input stream that the CLI reads from. It defaults to stdin.
+	In io.Reader
+	in *inpt.Scanner
+	// Out is where CLI prints its regular output. It defaults to stdout
+	Out io.Writer
 	// Transactions is a Transactions table, it allows the CLI app to interact
 	// with a store of transactions. It does not have a default, so it must be set.
 	Transactions Table
@@ -67,9 +73,18 @@ func (c *CLI) Run(args []string) int {
 	if c.Transactions == nil {
 		panic("budgeter: Transactions must be set on CLI")
 	}
+
 	if c.Err == nil {
-		c.err = log.New(os.Stderr, "", 0)
+		c.Err = os.Stderr
 	}
+	c.err = log.New(c.Err, "", 0)
+	if c.Out == nil {
+		c.Out = os.Stdout
+	}
+	if c.In == nil {
+		c.In = os.Stdin
+	}
+	c.in = inpt.NewScanner(c.In)
 
 	if len(args) < 2 {
 		c.err.Println(usage)
