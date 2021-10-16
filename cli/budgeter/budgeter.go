@@ -91,7 +91,16 @@ func (c *CLI) Run(args []string) int {
 		return 1
 	}
 
-	commands := map[string]commandFunc{
+	alias := args[1]
+	c.args = args[2:]
+	cmds := []command{&add{}, &recent{}}
+	for _, cmd := range cmds {
+		if cmd.Name() == alias {
+			return cmd.Run(c)
+		}
+	}
+
+	cmdFuncs := map[string]commandFunc{
 		backupName: backup,
 		exportName: export,
 		ingestName: ingest,
@@ -100,23 +109,14 @@ func (c *CLI) Run(args []string) int {
 		removeName: remove,
 		reportName: report,
 	}
-
-	alias := args[1]
-	c.args = args[2:]
-	cmd, ok := commands[alias]
+	cmdFunc, ok := cmdFuncs[alias]
 	if !ok {
-		cmds := []command{&add{}, &recent{}}
-		for _, cmd := range cmds {
-			if cmd.Name() == alias {
-				return cmd.Run(c)
-			}
-		}
 		c.err.Printf("command \"%s\" does not exist", alias)
 		c.err.Println()
 		c.err.Println(usage)
 		return 1
 	}
-	return cmd(c)
+	return cmdFunc(c)
 }
 
 func getFlagset(commandName string) *flag.FlagSet {
