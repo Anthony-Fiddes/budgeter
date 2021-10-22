@@ -36,15 +36,15 @@ func NewScanner(r io.Reader) *Scanner {
 // Line reads a line from the scanner and trims the whitespace around it.
 func (s *Scanner) Line() (string, error) {
 	s.Scan()
-	if err := scanner.Err(); err != nil {
+	if err := s.Err(); err != nil {
 		return "", fmt.Errorf("could not read line: %w", err)
 	}
-	result := scanner.Text()
+	result := s.Text()
 	result = strings.TrimSpace(result)
 	return result, nil
 }
 
-// Confirm reads input from the scanner and returns true if it is "y" or false if
+// Confirm reads a line and returns true if it is "y" or false if
 // it is anything else.
 func (s *Scanner) Confirm() (bool, error) {
 	input, err := s.Line()
