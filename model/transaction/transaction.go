@@ -23,6 +23,24 @@ const (
 	Thousands = ","
 )
 
+// Cent represents 1/100th of a Dollar
+type Cent int
+
+// String returns a string that represents the value of the given number of
+// "cents".
+func (c Cent) String() string {
+	sign := ""
+	negative := c < 0
+	if negative {
+		c *= -1
+		sign = "-"
+	}
+	dollars := c / 100
+	pennies := c % 100
+	// TODO: determine whether or not I want this to add in thousands separators
+	return fmt.Sprintf("%s%s%d.%02d", sign, Currency, dollars, pennies)
+}
+
 // TODO: add a String() function
 // Transaction represents a single transaction in a person's budget
 type Transaction struct {
@@ -30,7 +48,7 @@ type Transaction struct {
 	// Entity is the person or company the transaction was made with.
 	Entity string
 	// Amount is the cost of the transaction in cents
-	Amount int
+	Amount Cent
 	// Date is the Unix Time the transaction occurred.
 	Date int64
 	// Note is any note the user wants to add about the transaction.
@@ -44,12 +62,6 @@ func (t Transaction) DateString() string {
 	return date
 }
 
-// AmountString returns a string that represents the amount of the currency that
-//the Transaction was worth.
-func (t Transaction) AmountString() string {
-	return Dollars(t.Amount)
-}
-
 // Date converts a string of format M/D/YYYY and converts it to the appropriate
 // Unix time. This function is useful for working with the "Transaction" type.
 func Date(date string) (int64, error) {
@@ -60,24 +72,9 @@ func Date(date string) (int64, error) {
 	return result.Unix(), nil
 }
 
-// Dollars returns a string that represents the value of the given number of
-// "cents".
-func Dollars(cents int) string {
-	sign := ""
-	negative := cents < 0
-	if negative {
-		cents *= -1
-		sign = "-"
-	}
-	dollars := cents / 100
-	pennies := cents % 100
-	// TODO: determine whether or not I want this to add in thousands separators
-	return fmt.Sprintf("%s%s%d.%02d", sign, Currency, dollars, pennies)
-}
-
-// Cents takes a currency string formatted as [$]X.XX and returns the number of
+// GetCents takes a currency string formatted as [$]X.XX and returns the number of
 // cents that it represents
-func Cents(currency string) (int, error) {
+func GetCents(currency string) (Cent, error) {
 	currencyErr := func() error {
 		errCurrencyFmt := fmt.Sprintf(
 			"transaction: currency \"%%s\" must be provided in [%s]X%sXX format (\"%s\" is allowed)",
@@ -104,5 +101,5 @@ func Cents(currency string) (int, error) {
 	} else if len(c) > 2 {
 		return 0, currencyErr()
 	}
-	return dollars*100 + pennies, nil
+	return Cent(dollars*100 + pennies), nil
 }

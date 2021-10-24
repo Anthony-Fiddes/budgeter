@@ -133,7 +133,7 @@ func TestTable(t *testing.T) {
 
 	// RangeTotal Test
 	{
-		expected := 0
+		var expected transaction.Cent
 		for _, tx := range testData[2:] {
 			expected += tx.Amount
 		}
@@ -158,7 +158,7 @@ func TestTable(t *testing.T) {
 
 	// Total Test
 	{
-		expected := 0
+		var expected transaction.Cent
 		for _, tx := range testData {
 			expected += tx.Amount
 		}

@@ -117,7 +117,7 @@ func (a *add) getTransaction() (transaction.Transaction, error) {
 	if err != nil {
 		return transaction.Transaction{}, err
 	}
-	tx.Amount, err = transaction.Cents(amount)
+	tx.Amount, err = transaction.GetCents(amount)
 	if err != nil {
 		return transaction.Transaction{}, err
 	}

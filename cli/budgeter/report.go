@@ -32,7 +32,7 @@ func report(c *CLI) int {
 
 	type total struct {
 		month  time.Month
-		amount int
+		amount transaction.Cent
 	}
 
 	sPrintTotals := func(totals []total) string {
@@ -43,7 +43,12 @@ func report(c *CLI) int {
 		tab := tabby.NewCustom(tw)
 		tab.AddHeader("Month", "Spent")
 		for _, t := range totals {
-			tab.AddLine(t.month.String(), transaction.Dollars(t.amount))
+			amtStr := t.amount.String()
+			// Align all the amount cells
+			if t.amount >= 0 {
+				amtStr = " " + amtStr
+			}
+			tab.AddLine(t.month.String(), amtStr)
 		}
 		tab.Print()
 		return buf.String()

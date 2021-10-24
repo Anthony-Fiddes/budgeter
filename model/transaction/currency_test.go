@@ -9,7 +9,7 @@ import (
 func TestCents(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int
+		expected transaction.Cent
 	}{
 		{
 			input:    "5",
@@ -55,7 +55,7 @@ func TestCents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			result, err := transaction.Cents(test.input)
+			result, err := transaction.GetCents(test.input)
 			if err != nil {
 				t.Fatalf("err: %s\ntest: %+v", err, test)
 			}

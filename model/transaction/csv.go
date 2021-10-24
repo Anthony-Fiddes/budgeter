@@ -17,7 +17,7 @@ func (cw *CSVWriter) Write(tx Transaction) error {
 	row := []string{
 		tx.DateString(),
 		tx.Entity,
-		tx.AmountString(),
+		tx.Amount.String(),
 		tx.Note,
 	}
 	return cw.Writer.Write(row)
@@ -61,7 +61,7 @@ func (cr *CSVReader) Read() (Transaction, error) {
 		return Transaction{}, err
 	}
 	tx.Entity = cols[1]
-	tx.Amount, err = Cents(cols[2])
+	tx.Amount, err = GetCents(cols[2])
 	if err != nil {
 		return Transaction{}, err
 	}

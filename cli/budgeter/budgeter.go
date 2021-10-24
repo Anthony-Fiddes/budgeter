@@ -18,10 +18,10 @@ var usage string
 
 type Table interface {
 	Insert(transaction.Transaction) error
-	RangeTotal(start, end time.Time) (int, error)
+	RangeTotal(start, end time.Time) (transaction.Cent, error)
 	Remove(transactionID int) error
 	Search(query string, limit int) (*transaction.Rows, error)
-	Total() (int, error)
+	Total() (transaction.Cent, error)
 }
 
 type Store interface {

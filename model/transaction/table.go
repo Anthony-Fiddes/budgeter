@@ -94,7 +94,7 @@ func (t *Table) Range(start, end time.Time, limit int) (*Rows, error) {
 //
 // It uses, at most, "limit" transactions. A negative "limit" will use as many
 // transactions as are available.
-func (t *Table) RangeTotal(start, end time.Time) (int, error) {
+func (t *Table) RangeTotal(start, end time.Time) (Cent, error) {
 	startUnix := start.UTC().Unix()
 	stopUnix := end.UTC().Unix()
 	row := t.DB.QueryRow(
@@ -114,7 +114,7 @@ func (t *Table) RangeTotal(start, end time.Time) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("could not get total from %s to %s: %w", start, end, err)
 	}
-	return total, nil
+	return Cent(total), nil
 }
 
 // Insert inserts a transaction into the transactions table. The ID provided by
@@ -142,7 +142,7 @@ func (t *Table) Insert(tx Transaction) error {
 
 // Total returns the total of all the transactions in the database
 // ? will this become slow over time?
-func (t *Table) Total() (int, error) {
+func (t *Table) Total() (Cent, error) {
 	row := t.DB.QueryRow(
 		fmt.Sprintf(
 			"SELECT COALESCE(SUM(%s), 0) FROM %s",
@@ -155,7 +155,7 @@ func (t *Table) Total() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("transaction: could not query database for total: %w", err)
 	}
-	return total, nil
+	return Cent(total), nil
 }
 
 // Remove deletes the given transaction from the table.

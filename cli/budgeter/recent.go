@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/month"
-	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 	"github.com/cheynewallace/tabby"
 )
 
@@ -79,7 +78,7 @@ func (r *recent) Run(c *CLI) int {
 		}
 		tx := transactions[index]
 		// Align all the amount cells
-		amount := tx.AmountString()
+		amount := tx.Amount.String()
 		if tx.Amount >= 0 {
 			amount = " " + amount
 		}
@@ -96,7 +95,7 @@ func (r *recent) Run(c *CLI) int {
 			c.err.Println(err)
 			return 1
 		}
-		totalStr := fmt.Sprintf("Current Month: %s", transaction.Dollars(monthTotal))
+		totalStr := fmt.Sprintf("Current Month: %s", monthTotal)
 		for i := 0; i < len(totalStr); i++ {
 			fmt.Print("=")
 		}
