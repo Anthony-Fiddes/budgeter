@@ -84,21 +84,26 @@ func GetCents(currency string) (Cent, error) {
 	}
 	currency = strings.Replace(currency, Currency, "", 1)
 	currency = strings.Replace(currency, Thousands, "", 1)
-	c := strings.Split(currency, ".")
-	dollars, err := strconv.Atoi(c[0])
+	currency = strings.TrimSpace(currency)
+	currStr := strings.Split(currency, ".")
+	dollars, err := strconv.Atoi(currStr[0])
 	if err != nil {
 		return 0, currencyErr()
 	}
 	pennies := 0
-	if len(c) == 2 {
-		pennies, err = strconv.Atoi(c[1])
+	if len(currStr) == 2 {
+		penStr := currStr[1]
+		pennies, err = strconv.Atoi(penStr)
+		if len(penStr) == 1 {
+			pennies *= 10
+		}
 		if err != nil {
 			return 0, currencyErr()
 		}
 		if dollars < 0 {
 			pennies *= -1
 		}
-	} else if len(c) > 2 {
+	} else if len(currStr) > 2 {
 		return 0, currencyErr()
 	}
 	return Cent(dollars*100 + pennies), nil

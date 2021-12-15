@@ -20,6 +20,14 @@ func TestCents(t *testing.T) {
 			expected: 500,
 		},
 		{
+			input:    "5.30",
+			expected: 530,
+		},
+		{
+			input:    "5.3",
+			expected: 530,
+		},
+		{
 			input:    "500",
 			expected: 50000,
 		},
@@ -38,6 +46,14 @@ func TestCents(t *testing.T) {
 		{
 			input:    "-5.00",
 			expected: -500,
+		},
+		{
+			input:    "-5.30",
+			expected: -530,
+		},
+		{
+			input:    "-5.3",
+			expected: -530,
 		},
 		{
 			input:    "-500",
