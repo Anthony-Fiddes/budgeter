@@ -1,0 +1,10 @@
+ingest reads transactions from a file into your budgeting database.
+
+Usage: ingest <path>
+
+Ingest currently only supports the CSV format. The file must end in .csv, and
+its columns must be: Date, Entity, Amount, Note. This heading should not be
+included
+
+E.g. 1/9/1999, Falafel King, -5.99, Shawarma with friends!
+

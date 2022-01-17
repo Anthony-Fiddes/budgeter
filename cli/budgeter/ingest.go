@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	_ "embed"
+
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
@@ -13,6 +15,9 @@ const (
 	extCSV          = ".csv"
 	fieldsPerRecord = 4
 )
+
+//go:embed ingestUsage.txt
+var ingestUsage string
 
 // ingest takes a file of valid transactions and inserts them all into the
 // database.
@@ -32,6 +37,8 @@ func ingest(c *CLI) int {
 	args := fs.Args()
 	if len(args) != 1 {
 		c.err.Printf("%s takes one argument", ingestName)
+		c.err.Println()
+		c.err.Println(ingestUsage)
 		return 1
 	}
 
@@ -67,6 +74,8 @@ func ingest(c *CLI) int {
 		return 1
 	default:
 		c.err.Println("unsupported file type")
+		c.err.Println()
+		c.err.Println(ingestUsage)
 		return 1
 	}
 
