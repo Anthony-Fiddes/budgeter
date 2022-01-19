@@ -49,7 +49,7 @@ type Transaction struct {
 	Entity string
 	// Amount is the cost of the transaction in cents
 	Amount Cent
-	// Date is the Unix Time the transaction occurred.
+	// Date is the Unix Time the transaction occurred in seconds.
 	Date int64
 	// Note is any note the user wants to add about the transaction.
 	Note string
@@ -62,9 +62,9 @@ func (t Transaction) DateString() string {
 	return date
 }
 
-// Date converts a string of format M/D/YYYY and converts it to the appropriate
-// Unix time. This function is useful for working with the "Transaction" type.
-func Date(date string) (int64, error) {
+// Unix converts a string of format M/D/YYYY and converts it to the appropriate
+// Unix time in seconds. This function is useful for working with the "Transaction" type.
+func Unix(date string) (int64, error) {
 	result, err := time.Parse(DateLayout, date)
 	if err != nil {
 		return 0, fmt.Errorf("transaction: date \"%s\" must be provided in M/D/YYYY format", date)

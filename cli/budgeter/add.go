@@ -2,6 +2,8 @@ package budgeter
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/inpt"
@@ -13,6 +15,7 @@ var addUsage = "add doesn't quite have options just yet!"
 type add struct {
 	*CLI
 	lastDate string
+	lastUnix int64
 }
 
 func (a *add) Name() string {
@@ -56,8 +59,8 @@ func (a *add) interactiveAdd() int {
 			return 1
 		}
 
-		// TODO: Add context when adding transactions. e.g. making the last
-		// used date the new default?, enabling an undo command
+		// TODO: Add context when adding transactions between sessions.
+		// e.g. making the last used date the new default?, enabling an undo command
 		fmt.Fprint(a.Out, "\nWould you like to add another transaction? (y/[n]) ")
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
@@ -84,7 +87,9 @@ func (a *add) getField(field string) (string, error) {
 
 func (a *add) getDate() (int64, error) {
 	if a.lastDate == "" {
-		a.lastDate = time.Now().Format(transaction.DateLayout)
+		now := time.Now()
+		a.lastDate = now.Format(transaction.DateLayout)
+		a.lastUnix = now.Unix()
 	}
 	fmt.Fprintf(a.Out, "%s [%s]: ", transaction.DateCol, a.lastDate)
 	response, err := a.in.Line()
@@ -92,14 +97,25 @@ func (a *add) getDate() (int64, error) {
 		return 0, err
 	}
 	if response == "" {
+		// the default date is the last date the user entered. If they haven't
+		// entered anything, it's today's date.
 		response = a.lastDate
 	}
-	date, err := transaction.Date(response)
+	if strings.Count(response, "/") == 1 {
+		// the user may enter a short date in the format of MM/DD
+		// the year will be taken from their last response.
+		response += "/"
+		t := time.Unix(a.lastUnix, 0)
+		lastYear := strconv.Itoa(t.Year())
+		response += lastYear
+	}
+	unix, err := transaction.Unix(response)
 	if err != nil {
 		return 0, err
 	}
 	a.lastDate = response
-	return date, err
+	a.lastUnix = unix
+	return unix, err
 }
 
 func (a *add) getTransaction() (transaction.Transaction, error) {

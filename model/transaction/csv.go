@@ -56,7 +56,7 @@ func (cr *CSVReader) Read() (Transaction, error) {
 		)
 	}
 	tx := Transaction{}
-	tx.Date, err = Date(cols[0])
+	tx.Date, err = Unix(cols[0])
 	if err != nil {
 		return Transaction{}, err
 	}
