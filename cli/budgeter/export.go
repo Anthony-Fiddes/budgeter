@@ -3,6 +3,7 @@ package budgeter
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
@@ -28,7 +29,7 @@ func export(c *CLI) int {
 	}
 
 	filePath := args[0]
-	fileType := filepath.Ext(filePath)
+	fileType := strings.ToLower(filepath.Ext(filePath))
 	rows, err := c.Transactions.Search("", -1)
 	if err != nil {
 		c.err.Println(err)
@@ -57,7 +58,7 @@ func export(c *CLI) int {
 		c.err.Println("no file type specified")
 		return 1
 	default:
-		c.err.Println("unsupported file type")
+		c.err.Printf("unsupported file type: %s", fileType)
 		return 1
 	}
 
