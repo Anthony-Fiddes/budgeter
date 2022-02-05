@@ -12,6 +12,14 @@ func TestCents(t *testing.T) {
 		expected transaction.Cent
 	}{
 		{
+			input:    ".5",
+			expected: 50,
+		},
+		{
+			input:    ".53",
+			expected: 53,
+		},
+		{
 			input:    "5",
 			expected: 500,
 		},
@@ -38,6 +46,14 @@ func TestCents(t *testing.T) {
 		{
 			input:    "500,000.00",
 			expected: 50000000,
+		},
+		{
+			input:    "-.5",
+			expected: -50,
+		},
+		{
+			input:    "-.53",
+			expected: -53,
 		},
 		{
 			input:    "-5",
