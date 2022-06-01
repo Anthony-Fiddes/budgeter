@@ -32,6 +32,7 @@ func (a *add) Run(c *CLI) int {
 		return 1
 	}
 	args := fs.Args()
+	const fieldsPerRecord = 4
 	if len(args) == 0 {
 		return a.interactiveAdd()
 	} else if len(args) > fieldsPerRecord {
