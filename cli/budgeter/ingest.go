@@ -8,13 +8,12 @@ import (
 
 	_ "embed"
 
-	"github.com/Anthony-Fiddes/budgeter/model/transaction"
+	"github.com/Anthony-Fiddes/budgeter/internal/csvfmt"
 )
 
 const (
-	ingestName      = "ingest"
-	extCSV          = ".csv"
-	fieldsPerRecord = 4
+	ingestName = "ingest"
+	extCSV     = ".csv"
 )
 
 //go:embed ingestUsage.txt
@@ -54,9 +53,9 @@ func ingest(c *CLI) int {
 		}
 		defer f.Close()
 
-		cw := transaction.NewCSVReader(f)
+		b := csvfmt.NewBare(f)
 		for {
-			tx, err := cw.Read()
+			tx, err := b.Read()
 			if err != nil {
 				if err == io.EOF {
 					break
