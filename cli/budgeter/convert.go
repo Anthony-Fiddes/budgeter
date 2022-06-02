@@ -49,10 +49,16 @@ func (c *convert) Run(cli *CLI) int {
 			cli.err.Printf(`could not read transactions from %s formatted file %s: %v`, csvfmt.Chase, inputPath, err)
 		}
 	case csvfmt.CapitalOne:
-		chase := csvfmt.NewCapitalOneReader(f)
-		transactions, err = csvfmt.ReadAll(chase)
+		capitalone := csvfmt.NewCapitalOneReader(f)
+		transactions, err = csvfmt.ReadAll(capitalone)
 		if err != nil {
 			cli.err.Printf(`could not read transactions from %s formatted file %s: %v`, csvfmt.CapitalOne, inputPath, err)
+		}
+	case csvfmt.Venmo:
+		venmo := csvfmt.NewVenmoReader(f)
+		transactions, err = csvfmt.ReadAll(venmo)
+		if err != nil {
+			cli.err.Printf(`could not read transactions from %s formatted file %s: %v`, csvfmt.Venmo, inputPath, err)
 		}
 	default:
 		// TODO: List supported formats

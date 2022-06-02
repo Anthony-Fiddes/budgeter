@@ -53,7 +53,7 @@ func ingest(c *CLI) int {
 		}
 		defer f.Close()
 
-		b := csvfmt.NewBare(f)
+		b := csvfmt.NewBareReader(f)
 		for {
 			tx, err := b.Read()
 			if err != nil {

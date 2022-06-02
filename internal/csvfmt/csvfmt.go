@@ -55,7 +55,7 @@ type Bare struct {
 	*csv.Reader
 }
 
-func NewBare(r io.Reader) *Bare {
+func NewBareReader(r io.Reader) *Bare {
 	return &Bare{Reader: csv.NewReader(r)}
 }
 
@@ -155,6 +155,85 @@ func (c *CapitalOneReader) Read() (transaction.Transaction, error) {
 		tx.Amount *= -1
 	} else {
 		tx.Amount, err = transaction.GetCents(cols[6])
+	}
+	return tx, nil
+}
+
+const Venmo = "venmo"
+
+type VenmoReader struct {
+	*csv.Reader
+}
+
+func NewVenmoReader(r io.Reader) *VenmoReader {
+	v := &VenmoReader{Reader: csv.NewReader(r)}
+	// discard header lines
+	for i := 0; i < 4; i++ {
+		v.Reader.Read()
+	}
+	return v
+}
+
+func removeSpaces(s string) string {
+	return strings.ReplaceAll(s, " ", "")
+}
+
+func (v *VenmoReader) Read() (transaction.Transaction, error) {
+	cols, err := getRow(v.Reader, Venmo, 19)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+
+	// Venmo statements have a line with contact/support information that
+	// indicate the end of the file for our purposes.
+	empty := true
+	for i := 0; i <= 13; i++ {
+		if cols[i] != "" {
+			empty = false
+			break
+		}
+	}
+	if empty {
+		return transaction.Transaction{}, io.EOF
+	}
+
+	const dateLayout = "2006-01-02T15:04:05"
+	date, err := convDate(cols[2], dateLayout, transaction.DateLayout)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	tx := transaction.Transaction{}
+	tx.Date, err = transaction.Unix(date)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	tx.Entity = "Venmo"
+	amountStr := removeSpaces(cols[8])
+	tx.Amount, err = transaction.GetCents(amountStr)
+	if err != nil {
+		return transaction.Transaction{}, err
+	}
+	feeStr := removeSpaces(cols[10])
+	if feeStr != "" {
+		fee, err := transaction.GetCents(feeStr)
+		if err != nil {
+			return transaction.Transaction{}, fmt.Errorf(`could not read fee from "%s": %w`, feeStr, err)
+		}
+		tx.Amount -= fee
+	}
+	txType := cols[3]
+	// Transfers usually don't have notes, so this keeps them from appearing as
+	// huge transactions with no context.
+	if strings.Contains(txType, "Transfer") {
+		tx.Note = txType
+		if feeStr != "" {
+			tx.Note += fmt.Sprintf(" (included fee: %s)", feeStr)
+		}
+	} else {
+		tx.Note = cols[5]
+		if cols[6] != "" && cols[7] != "" {
+			tx.Note += fmt.Sprintf(" (from %s to %s)", cols[6], cols[7])
+		}
 	}
 	return tx, nil
 }
