@@ -21,16 +21,18 @@ func backup(c *CLI) int {
 	}
 
 	dbFile, err := os.Open(c.DBPath)
+	defer dbFile.Close()
 	if err != nil {
-		c.err.Printf("error opening \"%s\" to read: %v", c.DBPath, err)
+		c.err.Printf("could not read backup: %v", err)
 		return 1
 	}
 	// TODO: make some consideration for the case where a file is already present.
 	// Consider writing to a temp file first or something
 	targetPath := c.args[0]
-	target, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY, 0644)
+	target, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_CREATE, 0644)
+	defer target.Close()
 	if err != nil {
-		c.err.Printf("error opening \"%s\" to write: %v", targetPath, err)
+		c.err.Printf("could not write new backup: %v", err)
 		return 1
 	}
 	_, err = io.Copy(target, dbFile)
