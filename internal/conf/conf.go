@@ -7,9 +7,15 @@ import (
 	"os"
 )
 
+// JSONFile represents a configuration file that is stored locally on disk and only
+// contains string values. I.e. no key has an array value or an embedded object.
 type JSONFile struct {
-	Path   string
+	path   string
 	values map[string]string
+}
+
+func NewJSONFile(path string) *JSONFile {
+	return &JSONFile{path: path}
 }
 
 func (j *JSONFile) Put(key, value string) error {
@@ -21,9 +27,9 @@ func (j *JSONFile) Put(key, value string) error {
 	if err != nil {
 		return fmt.Errorf("could not marshal config to JSON: %w", err)
 	}
-	err = ioutil.WriteFile(j.Path, data, 0644)
+	err = ioutil.WriteFile(j.path, data, 0644)
 	if err != nil {
-		return fmt.Errorf("could not write to configuration file \"%s\": %w", j.Path, err)
+		return fmt.Errorf("could not write to configuration file \"%s\": %w", j.path, err)
 	}
 	return nil
 }
@@ -43,10 +49,10 @@ func (j *JSONFile) Get(key string) (string, error) {
 // j.Path doesn't exist, j.values becomes just an empty map.
 func (j *JSONFile) reload() error {
 	var data []byte
-	if _, err := os.Stat(j.Path); !os.IsNotExist(err) {
-		data, err = ioutil.ReadFile(j.Path)
+	if _, err := os.Stat(j.path); !os.IsNotExist(err) {
+		data, err = ioutil.ReadFile(j.path)
 		if err != nil {
-			return fmt.Errorf("could not read configuration file \"%s\": %w", j.Path, err)
+			return fmt.Errorf("configuration file \"%s\" does not exist", j.path)
 		}
 	} else {
 		j.values = map[string]string{}
@@ -57,7 +63,7 @@ func (j *JSONFile) reload() error {
 	if err != nil {
 		return fmt.Errorf(
 			"configuration file \"%s\" does not contain JSON with only string values: %w",
-			j.Path, err,
+			j.path, err,
 		)
 	}
 	j.values = values

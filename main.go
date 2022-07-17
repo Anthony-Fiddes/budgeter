@@ -47,7 +47,7 @@ func main() {
 		log.Fatalf("could not initialize database transactions table: %v\n", err)
 	}
 	app := budgeter.CLI{
-		Config:       &conf.JSONFile{Path: configPath},
+		Config:       conf.NewJSONFile(configPath),
 		DBPath:       dbPath,
 		Transactions: &transaction.Table{DB: db},
 	}
