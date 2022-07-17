@@ -30,6 +30,9 @@ type Store interface {
 	// Get gets a value from the Store. If the value is not present, "" is
 	// returned with a nil error.
 	Get(Key string) (string, error)
+	// GetAll gets all of the key/value pairs from the store. If there are no
+	// entries in the store, a nil map is returned with a nil error.
+	GetAll() (map[string]string, error)
 }
 
 type CLI struct {
@@ -93,7 +96,7 @@ func (c *CLI) Run(args []string) int {
 
 	alias := args[1]
 	c.args = args[2:]
-	cmds := []command{&add{}, &convert{}, &recent{}}
+	cmds := []command{&add{}, &convert{}, &recent{}, &set{}}
 	for _, cmd := range cmds {
 		if cmd.Name() == alias {
 			return cmd.Run(c)

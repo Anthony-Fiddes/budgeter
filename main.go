@@ -25,7 +25,12 @@ func getConfigPath() string {
 	if err != nil {
 		log.Fatalf("could not get config path: %v\n", err)
 	}
-	return filepath.Join(config, "budgeter_config.json")
+	config = filepath.Join(config, "budgeter")
+	err = os.MkdirAll(config, 0755)
+	if err != nil {
+		log.Fatalf("could not create the config directory: %v\n", err)
+	}
+	return filepath.Join(config, "config.json")
 }
 
 func initDB(dbPath string) *sql.DB {

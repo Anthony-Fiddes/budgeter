@@ -1,0 +1,8 @@
+set allows you to change variables that determine how budgeter works for you.
+
+If no arguments are provided, set will show all of budgeter's current keys and
+values.
+
+If no value is provided, budgeter will show the value of the provided key.
+
+Usage: set [key] [value]

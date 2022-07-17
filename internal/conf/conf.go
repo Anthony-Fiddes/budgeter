@@ -45,6 +45,17 @@ func (j *JSONFile) Get(key string) (string, error) {
 	return "", nil
 }
 
+func (j *JSONFile) GetAll() (map[string]string, error) {
+	if err := j.reload(); err != nil {
+		return nil, err
+	}
+	result := make(map[string]string, len(j.values))
+	for k, v := range j.values {
+		result[k] = v
+	}
+	return result, nil
+}
+
 // reload reads the JSON file at j.Path and updates j.values to match it. If
 // j.Path doesn't exist, j.values becomes just an empty map.
 func (j *JSONFile) reload() error {
