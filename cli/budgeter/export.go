@@ -30,7 +30,7 @@ func export(c *CLI) int {
 
 	filePath := args[0]
 	fileType := strings.ToLower(filepath.Ext(filePath))
-	rows, err := c.Transactions.Search("", -1)
+	transactions, err := c.Transactions.Search("", -1)
 	if err != nil {
 		c.err.Println(err)
 		return 1
@@ -45,12 +45,7 @@ func export(c *CLI) int {
 		defer f.Close()
 
 		cw := transaction.NewCSVWriter(f)
-		for rows.Next() {
-			tx, err := rows.Scan()
-			if err != nil {
-				c.err.Println(err)
-				return 1
-			}
+		for _, tx := range transactions {
 			cw.Write(tx)
 		}
 		cw.Flush()

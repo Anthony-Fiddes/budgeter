@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-// Table is the transactions table in a database
-type Table struct{ DB *sql.DB }
+// SQLLiteDB is the transactions table in a database
+type SQLLiteDB struct{ DB *sql.DB }
 
 // Init creates the transactions table if it doesn't exist.
-func (t *Table) Init() error {
-	_, err := t.DB.Exec(
+func (s *SQLLiteDB) Init() error {
+	_, err := s.DB.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE IF NOT EXISTS %s "+
 				"(%s INTEGER NOT NULL PRIMARY KEY, "+
@@ -45,9 +45,9 @@ func queryError(e error) error {
 // It returns, at most, "limit" transactions, and returns more recent
 // transactions first. A negative "limit" will return as many
 // transactions as are available.
-func (t *Table) Search(query string, limit int) (*Rows, error) {
+func (s *SQLLiteDB) Search(query string, limit int) ([]Transaction, error) {
 	query = "%" + query + "%"
-	rows, err := t.DB.Query(
+	rows, err := s.DB.Query(
 		fmt.Sprintf(
 			"SELECT * FROM %s WHERE %s LIKE ? OR %s LIKE ? ORDER BY %s DESC LIMIT ?",
 			TableName,
@@ -62,16 +62,18 @@ func (t *Table) Search(query string, limit int) (*Rows, error) {
 	if err != nil {
 		return nil, queryError(err)
 	}
-	return &Rows{rows}, nil
+	r := Rows{rows}
+	transactions, err := r.ScanSet()
+	return transactions, err
 }
 
 // Range returns the transactions that occurred within the give range of time.
 // It returns, at most, "limit" transactions, and returns them in chronological
 // order. A negative "limit" will return as many transactions as are available.
-func (t *Table) Range(start, end time.Time, limit int) (*Rows, error) {
+func (s *SQLLiteDB) Range(start, end time.Time, limit int) ([]Transaction, error) {
 	startUnix := start.UTC().Unix()
 	stopUnix := end.UTC().Unix()
-	rows, err := t.DB.Query(
+	rows, err := s.DB.Query(
 		fmt.Sprintf(
 			"SELECT * FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s ASC LIMIT ?",
 			TableName,
@@ -86,7 +88,9 @@ func (t *Table) Range(start, end time.Time, limit int) (*Rows, error) {
 	if err != nil {
 		return nil, queryError(err)
 	}
-	return &Rows{rows}, nil
+	r := &Rows{rows}
+	transactions, err := r.ScanSet()
+	return transactions, err
 }
 
 // RangeTotal returns the cost of the transactions that occurred within the give
@@ -94,10 +98,10 @@ func (t *Table) Range(start, end time.Time, limit int) (*Rows, error) {
 //
 // It uses, at most, "limit" transactions. A negative "limit" will use as many
 // transactions as are available.
-func (t *Table) RangeTotal(start, end time.Time) (Cent, error) {
+func (s *SQLLiteDB) RangeTotal(start, end time.Time) (Cent, error) {
 	startUnix := start.UTC().Unix()
 	stopUnix := end.UTC().Unix()
-	row := t.DB.QueryRow(
+	row := s.DB.QueryRow(
 		fmt.Sprintf(
 			"SELECT COALESCE(SUM(%s), 0) FROM %s WHERE %s >= ? AND %s <= ? ORDER BY %s ASC",
 			AmountCol,
@@ -119,8 +123,8 @@ func (t *Table) RangeTotal(start, end time.Time) (Cent, error) {
 
 // Insert inserts a transaction into the transactions table. The ID provided by
 // "tx" is ignored, as the database determines the ID.
-func (t *Table) Insert(tx Transaction) error {
-	_, err := t.DB.Exec(
+func (s *SQLLiteDB) Insert(tx Transaction) error {
+	_, err := s.DB.Exec(
 		fmt.Sprintf(
 			"INSERT INTO %s(%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
 			TableName,
@@ -142,8 +146,8 @@ func (t *Table) Insert(tx Transaction) error {
 
 // Total returns the total of all the transactions in the database
 // ? will this become slow over time?
-func (t *Table) Total() (Cent, error) {
-	row := t.DB.QueryRow(
+func (s *SQLLiteDB) Total() (Cent, error) {
+	row := s.DB.QueryRow(
 		fmt.Sprintf(
 			"SELECT COALESCE(SUM(%s), 0) FROM %s",
 			AmountCol,
@@ -159,8 +163,8 @@ func (t *Table) Total() (Cent, error) {
 }
 
 // Remove deletes the given transaction from the table.
-func (t *Table) Remove(transactionID int) error {
-	_, err := t.DB.Exec(
+func (s *SQLLiteDB) Remove(transactionID int) error {
+	_, err := s.DB.Exec(
 		fmt.Sprintf(
 			"DELETE FROM %s WHERE %s=?",
 			TableName,

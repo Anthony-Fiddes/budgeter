@@ -58,12 +58,7 @@ func (r *recent) Run(c *CLI) int {
 		return 1
 	}
 
-	rows, err := c.Transactions.Search(r.search, r.limit)
-	if err != nil {
-		c.err.Println(err)
-		return 1
-	}
-	transactions, err := rows.ScanSet()
+	transactions, err := c.Transactions.Search(r.search, r.limit)
 	if err != nil {
 		c.err.Println(err)
 		return 1

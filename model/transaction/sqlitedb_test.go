@@ -10,13 +10,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func getMemTable() (*transaction.Table, error) {
+func getMemTable() (*transaction.SQLLiteDB, error) {
 	const URI = ":memory:"
 	db, err := sql.Open("sqlite3", URI)
 	if err != nil {
 		return nil, fmt.Errorf("error creating an in-memory database for testing: %w", err)
 	}
-	table := &transaction.Table{DB: db}
+	table := &transaction.SQLLiteDB{DB: db}
 	err = table.Init()
 	if err != nil {
 		return nil, fmt.Errorf("error creating the transaction table: %w", err)
@@ -88,14 +88,16 @@ func TestTable(t *testing.T) {
 
 	// Search Test
 	for _, tx := range testData {
-		rows, err := table.Search(tx.Entity, 1)
+		transactions, err := table.Search(tx.Entity, 1)
+		if len(transactions) < 1 && err == nil {
+			err = fmt.Errorf("table.Search failed: no transactions returned")	
+		}
 		if err != nil {
 			t.Logf("transaction: %+v", tx)
 			t.Fatalf(`table.Search failed: %v`, err)
 		}
 
-		rows.Next()
-		result, err := rows.Scan()
+		result := transactions[0]
 		if err != nil || !equal(result, tx) {
 			t.Log(err)
 			t.Fatalf(
@@ -103,19 +105,15 @@ func TestTable(t *testing.T) {
 				tx.Entity, tx, result,
 			)
 		}
-		if rows.Next() {
-			t.Log("Rows.Next should be false after one call but isn't")
-		}
 	}
 
 	// Range Test
 	{
 		expected := testData[2:]
-		rows, err := table.Range(time.Unix(5, 0), time.Unix(6, 0), -1)
+		result, err := table.Range(time.Unix(5, 0), time.Unix(6, 0), -1)
 		if err != nil {
 			t.Fatalf("table.Range failed: %v", err)
 		}
-		result, err := rows.ScanSet()
 		if err != nil {
 			t.Fatalf("could not scan rows from table: %v", err)
 		}
@@ -173,13 +171,9 @@ func TestTable(t *testing.T) {
 
 	// Remove Test
 	{
-		rows, err := table.Search("", -1)
+		transactions, err := table.Search("", -1)
 		if err != nil {
 			t.Errorf("unexpected error searching table: %v", err)
-		}
-		transactions, err := rows.ScanSet()
-		if err != nil {
-			t.Errorf("unexpected error scanning rows: %v", err)
 		}
 		for _, tx := range transactions {
 			err = table.Remove(tx.ID)
@@ -189,11 +183,10 @@ func TestTable(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		rows, err = table.Search("", -1)
+		remaining, err := table.Search("", -1)
 		if err != nil {
 			t.Errorf("unexpected error searching table: %v", err)
 		}
-		remaining, err := rows.ScanSet()
 		if err != nil {
 			t.Errorf("unexpected error scanning rows: %v", err)
 		}

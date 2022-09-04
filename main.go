@@ -46,7 +46,7 @@ func main() {
 	dbPath := getDBPath()
 	db := initDB(dbPath)
 	configPath := getConfigPath()
-	table := &transaction.Table{DB: db}
+	table := &transaction.SQLLiteDB{DB: db}
 	err := table.Init()
 	if err != nil {
 		log.Fatalf("could not initialize database transactions table: %v\n", err)
@@ -54,7 +54,7 @@ func main() {
 	app := budgeter.CLI{
 		Config:       conf.NewJSONFile(configPath),
 		DBPath:       dbPath,
-		Transactions: &transaction.Table{DB: db},
+		Transactions: &transaction.SQLLiteDB{DB: db},
 	}
 	os.Exit(app.Run(os.Args))
 }
