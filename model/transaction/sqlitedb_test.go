@@ -24,8 +24,8 @@ func getMemTable() (*transaction.SQLLiteDB, error) {
 	return table, nil
 }
 
-// TestTable tests Table and its methods all at once since they're all very coupled.
-func TestTable(t *testing.T) {
+// TestSQLLiteDB tests SQLLiteDB and its methods all at once since they're all very coupled.
+func TestSQLLiteDB(t *testing.T) {
 	table, err := getMemTable()
 	if err != nil {
 		t.Fatal(err)
