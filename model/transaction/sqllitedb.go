@@ -95,9 +95,6 @@ func (s *SQLLiteDB) Range(start, end time.Time, limit int) ([]Transaction, error
 
 // RangeTotal returns the cost of the transactions that occurred within the give
 // range of time.
-//
-// It uses, at most, "limit" transactions. A negative "limit" will use as many
-// transactions as are available.
 func (s *SQLLiteDB) RangeTotal(start, end time.Time) (Cent, error) {
 	startUnix := start.UTC().Unix()
 	stopUnix := end.UTC().Unix()

@@ -18,10 +18,10 @@ var usage string
 
 type Table interface {
 	Insert(transaction.Transaction) error
+	// RangeTotal dates are inclusive
 	RangeTotal(start, end time.Time) (transaction.Cent, error)
 	Remove(transactionID int) error
 	Search(query string, limit int) ([]transaction.Transaction, error)
-	Total() (transaction.Cent, error)
 }
 
 type Store interface {

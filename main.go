@@ -13,11 +13,11 @@ import (
 )
 
 func getDBPath() string {
-	home, err := os.UserHomeDir()
+	cache, err := os.UserCacheDir()
 	if err != nil {
 		log.Fatalf("could not get database path: %v\n", err)
 	}
-	return filepath.Join(home, ".budgeter.db")
+	return filepath.Join(cache, "budgeter.tsv")
 }
 
 func getConfigPath() string {
@@ -44,17 +44,11 @@ func initDB(dbPath string) *sql.DB {
 
 func main() {
 	dbPath := getDBPath()
-	db := initDB(dbPath)
 	configPath := getConfigPath()
-	table := &transaction.SQLLiteDB{DB: db}
-	err := table.Init()
-	if err != nil {
-		log.Fatalf("could not initialize database transactions table: %v\n", err)
-	}
 	app := budgeter.CLI{
 		Config:       conf.NewJSONFile(configPath),
 		DBPath:       dbPath,
-		Transactions: &transaction.SQLLiteDB{DB: db},
+		Transactions: transaction.NewTSVTable(getDBPath()),
 	}
 	os.Exit(app.Run(os.Args))
 }
