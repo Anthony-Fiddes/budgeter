@@ -2,6 +2,7 @@ package budgeter
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -10,53 +11,56 @@ import (
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
-var addUsage = "add doesn't quite have options just yet!"
-
 type add struct {
-	*CLI
-	lastDate string
-	lastUnix int64
+	lastDate     string
+	lastUnix     int64
+	in           *inpt.Scanner
+	Out          io.Writer
+	Transactions Table
 }
 
-func (a *add) Name() string {
+func newAdd(c *CLI) *add {
+	result := &add{}
+	result.in = c.in
+	result.Out = c.Out
+	result.Transactions = c.Transactions
+	return result
+}
+
+func (a add) Name() string {
 	return "add"
 }
 
-func (a *add) Run(c *CLI) int {
-	a.CLI = c
+func (a add) Usage() string {
+	return "add adds a new transaction to your budgeter. It doesn't have any options yet."
+}
+
+func (a add) Run(cmdArgs []string) error {
 	fs := getFlagset(a.Name())
-	if err := fs.Parse(c.args); err != nil {
-		c.logParsingErr(err)
-		c.err.Println()
-		c.err.Print(addUsage)
-		return 1
+	if err := fs.Parse(cmdArgs); err != nil {
+		return err
 	}
 	args := fs.Args()
 	if len(args) == 0 {
 		return a.interactiveAdd()
 	} else if len(args) > fieldsPerRecord {
-		c.err.Printf("%s takes at most %d arguments", a.Name(), fieldsPerRecord)
-		c.err.Println()
-		c.err.Print(addUsage)
-		return 1
+		return fmt.Errorf("%s takes at most %d arguments", a.Name(), fieldsPerRecord)
 	}
 	// TODO: implement an option that parses from flags or from args
-	return 0
+	return nil
 }
 
 // TODO: Find a way to handle duplicates gracefully
-func (a *add) interactiveAdd() int {
+func (a *add) interactiveAdd() error {
 	// TODO: allow short dates like "21" or "6/21" that
 	// default to this month or year
 	for {
 		tx, err := a.getTransaction()
 		if err != nil {
-			a.err.Println(err)
-			return 1
+			return err
 		}
 		if err := a.Transactions.Insert(tx); err != nil {
-			a.err.Println(err)
-			return 1
+			return err
 		}
 
 		// TODO: Add context when adding transactions between sessions.
@@ -65,15 +69,14 @@ func (a *add) interactiveAdd() int {
 		confirmed, err := inpt.Confirm()
 		fmt.Println()
 		if err != nil {
-			a.err.Println(err)
-			return 1
+			return err
 		}
 		if !confirmed {
 			break
 		}
 	}
 
-	return 0
+	return nil
 }
 
 func (a *add) getField(field string) (string, error) {

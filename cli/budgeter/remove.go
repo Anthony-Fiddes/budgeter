@@ -1,48 +1,51 @@
 package budgeter
 
 import (
+	"fmt"
 	"strconv"
 
 	_ "embed"
 )
 
-const (
-	removeName = "remove"
-)
+type remove struct {
+	Transactions Table
+}
+
+func newRemove(c *CLI) *remove {
+	return &remove{Transactions: c.Transactions}
+}
+
+func (r remove) Name() string {
+	return "remove"
+}
 
 //go:embed removeUsage.txt
 var removeUsage string
 
-func remove(c *CLI) int {
-	fs := getFlagset(removeName)
-	if err := fs.Parse(c.args); err != nil {
-		c.logParsingErr(err)
-		c.err.Println()
-		c.err.Print(removeUsage)
-		return 1
+func (r remove) Usage() string {
+	return removeUsage
+}
+
+func (r remove) Run(cmdArgs []string) error {
+	fs := getFlagset(r.Name())
+	if err := fs.Parse(cmdArgs); err != nil {
+		return err
 	}
 	args := fs.Args()
 	if len(args) != 1 {
-		c.err.Printf("%s takes one argument", removeName)
-		c.err.Println()
-		c.err.Print(removeUsage)
-		return 1
+		return fmt.Errorf("%s takes one argument", r.Name())
 	}
 	txID, err := strconv.Atoi(args[0])
 	if err != nil {
-		c.err.Printf(
+		return fmt.Errorf(
 			"%s takes a numerical ID. try `budgeter %s` to see some IDs.",
-			removeName,
-			recentName,
+			r.Name(),
+			recent{}.Name(),
 		)
-		c.err.Println()
-		c.err.Print(removeUsage)
-		return 1
 	}
-	err = c.Transactions.Remove(txID)
+	err = r.Transactions.Remove(txID)
 	if err != nil {
-		c.err.Printf("could not remove transaction #%d: %v", txID, err)
-		return 1
+		return fmt.Errorf("could not remove transaction #%d: %v", txID, err)
 	}
-	return 0
+	return nil
 }
