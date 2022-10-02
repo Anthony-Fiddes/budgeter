@@ -93,7 +93,7 @@ func (c *CLI) Run(args []string) int {
 
 	alias := args[1]
 	c.args = args[2:]
-	cmds := []command{newAdd(c), newBackup(c), newExport(c), newIngest(c), newRecent(c), newRemove(c)}
+	cmds := []command{newAdd(c), newBackup(c), convert{}, newExport(c), newIngest(c), newRecent(c), newRemove(c)}
 	for _, cmd := range cmds {
 		if cmd.Name() == alias {
 			err := cmd.Run(c.args)

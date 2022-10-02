@@ -35,15 +35,17 @@ func (b backup) Run(cmdArgs []string) error {
 	}
 
 	dbFile, err := os.Open(b.DBPath)
+	defer dbFile.Close()
 	if err != nil {
-		return fmt.Errorf("error opening \"%s\" to read: %w", b.DBPath, err)
+		return fmt.Errorf("could not read backup: %w", err)
 	}
 	// TODO: make some consideration for the case where a file is already present.
 	// Consider writing to a temp file first or something
 	targetPath := cmdArgs[0]
 	target, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY, 0644)
+	defer target.Close()
 	if err != nil {
-		return fmt.Errorf("error opening \"%s\" to write: %w", targetPath, err)
+		return fmt.Errorf("could not write new backup: %w", err)
 	}
 	_, err = io.Copy(target, dbFile)
 	if err != nil {
