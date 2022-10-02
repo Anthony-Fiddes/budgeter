@@ -27,7 +27,17 @@ func NewTSVTable(file string) *TSVTable {
 }
 
 func (t TSVTable) Insert(tx Transaction) error {
-	return t.append(tx)
+	file, err := os.OpenFile(t.filePath, os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return fmt.Errorf("could not open TSV file for append: %w", err)
+	}
+	defer file.Close()
+	tw := newTSVWriter(file)
+	err = tw.Write(tx)
+	if err != nil {
+		return fmt.Errorf("TSVTable.Insert: could not add transaction to TSV file: %w", err)
+	}
+	return nil
 }
 
 func (t TSVTable) RangeTotal(start, end time.Time) (Cent, error) {
@@ -94,6 +104,9 @@ func (t TSVTable) read() ([]Transaction, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read all transactions from TSV file: %w", err)
 	}
+	for i := range transactions {
+		transactions[i].ID = i
+	}
 	return transactions, nil
 }
 
@@ -107,20 +120,6 @@ func (t TSVTable) write(transactions []Transaction) error {
 	err = tw.WriteAll(transactions)
 	if err != nil {
 		return fmt.Errorf("could not write all transactions to TSV file: %w", err)
-	}
-	return nil
-}
-
-func (t TSVTable) append(transactions ...Transaction) error {
-	file, err := os.OpenFile(t.filePath, os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		return fmt.Errorf("could not open TSV file for append: %w", err)
-	}
-	defer file.Close()
-	tw := newTSVWriter(file)
-	err = tw.WriteAll(transactions)
-	if err != nil {
-		return fmt.Errorf("could not append all transactions to TSV file: %w", err)
 	}
 	return nil
 }

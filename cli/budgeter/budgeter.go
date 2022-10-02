@@ -17,6 +17,7 @@ import (
 var usage string
 
 type Table interface {
+	// Insert is responsible for assigning IDs if needed
 	Insert(transaction.Transaction) error
 	// RangeTotal dates are inclusive
 	RangeTotal(start, end time.Time) (transaction.Cent, error)
