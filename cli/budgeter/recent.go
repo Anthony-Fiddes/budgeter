@@ -10,25 +10,33 @@ import (
 )
 
 type recent struct {
-	limit  int
-	search string
-	flip   bool
+	limit        int
+	search       string
+	flip         bool
+	Transactions Table
+}
+
+func newRecent(c *CLI) *recent {
+	result := recent{}
+	result.Transactions = c.Transactions
+	return &result
+}
+
+func (r recent) Name() string {
+	return "recent"
 }
 
 //go:embed recentUsage.txt
 var recentUsage string
 
-// recentName is a const because it is used as a suggestion in remove.
-const recentName = "recent"
-
-func (r *recent) Name() string {
-	return recentName
+func (r recent) Usage() string {
+	return recentUsage
 }
 
 // recent lists the most recently added transactions.
 // TODO: Add a "pinned" feature/subcommand?
 // TODO: Add a total for searches
-func (r *recent) Run(c *CLI) int {
+func (r recent) Run(cmdArgs []string) error {
 	const (
 		// defaultRecentLimit specifies the default number of items to receive when
 		// the recent command is called
@@ -45,23 +53,18 @@ func (r *recent) Run(c *CLI) int {
 	fs.StringVar(&r.search, "s", "", "")
 	fs.BoolVar(&r.flip, "f", false, "")
 	fs.IntVar(&r.limit, "l", defaultRecentLimit, "")
-	if err := fs.Parse(c.args); err != nil {
-		c.logParsingErr(err)
-		c.err.Println()
-		c.err.Println(recentUsage)
-		return 1
+	if err := fs.Parse(cmdArgs); err != nil {
+		return err
 	}
 	fs.Usage()
 	args := fs.Args()
 	if len(args) > 0 {
-		c.err.Printf("%s takes no arguments", r.Name())
-		return 1
+		return fmt.Errorf("%s takes no arguments", r.Name())
 	}
 
-	transactions, err := c.Transactions.Search(r.search, r.limit)
+	transactions, err := r.Transactions.Search(r.search, r.limit)
 	if err != nil {
-		c.err.Println(err)
-		return 1
+		return err
 	}
 
 	tab := tabby.New()
@@ -85,10 +88,9 @@ func (r *recent) Run(c *CLI) int {
 		// TODO: make this configurable with limit subcommand
 		// TODO: maybe add a test for this since it was buggy before?
 		now := time.Now().UTC()
-		monthTotal, err := c.Transactions.RangeTotal(month.Start(now), now)
+		monthTotal, err := r.Transactions.RangeTotal(month.Start(now), now)
 		if err != nil {
-			c.err.Println(err)
-			return 1
+			return err
 		}
 		totalStr := fmt.Sprintf("Current Month: %s", monthTotal)
 		for i := 0; i < len(totalStr); i++ {
@@ -97,5 +99,5 @@ func (r *recent) Run(c *CLI) int {
 		fmt.Println()
 		fmt.Println(totalStr)
 	}
-	return 0
+	return nil
 }

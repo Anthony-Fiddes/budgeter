@@ -1,6 +1,7 @@
 package budgeter
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,39 +9,49 @@ import (
 	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 )
 
-const exportName = "export"
+type export struct {
+	Transactions Table
+}
+
+func newExport(c *CLI) *export {
+	return &export{Transactions: c.Transactions}
+}
+
+func (e export) Name() string {
+	return "export"
+}
+
+func (e export) Usage() string {
+	return "export writes all of your budgeter's transactions to a file. The file extension specified determines the format of the output."
+}
 
 // export writes all of the transactions in the given table to the given file name.
 //
 // currently, it expects that the file type is included in the file name and
 // only supports csv.
-func export(c *CLI) int {
-	fs := getFlagset(exportName)
-	err := fs.Parse(c.args)
+func (e export) Run(cmdArgs []string) error {
+	fs := getFlagset(e.Name())
+	err := fs.Parse(cmdArgs)
 	if err != nil {
-		c.logParsingErr(err)
-		return 1
+		return err
 	}
 
 	args := fs.Args()
 	if len(args) != 1 {
-		c.err.Printf("%s takes one argument", exportName)
-		return 1
+		return fmt.Errorf("%s takes one argument", e.Name())
 	}
 
 	filePath := args[0]
 	fileType := strings.ToLower(filepath.Ext(filePath))
-	transactions, err := c.Transactions.Search("", -1)
+	transactions, err := e.Transactions.Search("", -1)
 	if err != nil {
-		c.err.Println(err)
-		return 1
+		return err
 	}
 	switch fileType {
 	case extCSV:
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			c.err.Println(err)
-			return 1
+			return err
 		}
 		defer f.Close()
 
@@ -50,12 +61,10 @@ func export(c *CLI) int {
 		}
 		cw.Flush()
 	case "":
-		c.err.Println("no file type specified")
-		return 1
+		return fmt.Errorf("no file type specified")
 	default:
-		c.err.Printf("unsupported file type: %s", fileType)
-		return 1
+		return fmt.Errorf("unsupported file type: %s", fileType)
 	}
 
-	return 0
+	return nil
 }
