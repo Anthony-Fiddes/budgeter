@@ -59,12 +59,9 @@ type CLI struct {
 
 type command interface {
 	Name() string
-	Run(*CLI) int
+	Run(args []string) error
+	Usage() string
 }
-
-// A commandFunc performs a budgeting action using the configured CLI. It returns an
-// error code. A nonzero code is an error.
-type commandFunc func(c *CLI) int
 
 // Run runs the budgeter CLI with the given arguments.
 //
@@ -96,30 +93,22 @@ func (c *CLI) Run(args []string) int {
 
 	alias := args[1]
 	c.args = args[2:]
-	cmds := []command{&add{}, &convert{}, &recent{}, &set{}}
+	cmds := []command{newAdd(c), newBackup(c), convert{}, newExport(c), newIngest(c), newRecent(c), newRemove(c)}
 	for _, cmd := range cmds {
 		if cmd.Name() == alias {
-			return cmd.Run(c)
+			err := cmd.Run(c.args)
+			if err != nil {
+				c.err.Println(err)
+				c.err.Println()
+				c.err.Println(cmd.Usage())
+				return 1
+			}
+			return 0
 		}
 	}
 
-	cmdFuncs := map[string]commandFunc{
-		backupName: backup,
-		exportName: export,
-		ingestName: ingest,
-		limitName:  limit,
-		wipeName:   wipe,
-		removeName: remove,
-		reportName: report,
-	}
-	cmdFunc, ok := cmdFuncs[alias]
-	if !ok {
-		c.err.Printf("command \"%s\" does not exist", alias)
-		c.err.Println()
-		c.err.Println(usage)
-		return 1
-	}
-	return cmdFunc(c)
+	c.err.Printf("command \"%s\" does not exist", alias)
+	return 1
 }
 
 func getFlagset(commandName string) *flag.FlagSet {
