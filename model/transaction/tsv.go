@@ -86,7 +86,7 @@ func (t TSVTable) Search(query string, limit int) ([]Transaction, error) {
 		if limit > 0 && len(result) >= limit {
 			break
 		}
-		if strings.Contains(tx.Entity, query) || strings.Contains(tx.Note, query) {
+		if strings.Contains(strings.ToLower(tx.Entity), query) || strings.Contains(strings.ToLower(tx.Note), query) {
 			result = append(result, tx)
 		}
 	}
