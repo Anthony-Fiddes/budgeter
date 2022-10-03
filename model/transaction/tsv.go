@@ -18,10 +18,10 @@ func NewTSVTable(file string) *TSVTable {
 	_, err := os.Stat(file)
 	if os.IsNotExist(err) {
 		f, err := os.OpenFile(file, os.O_CREATE, 0644)
-		f.Close()
 		if err != nil {
 			log.Panicf(`Could not create TSVTable backing file at %v: %v`, file, err)
 		}
+		f.Close()
 	}
 	return t
 }
@@ -35,7 +35,12 @@ func (t TSVTable) Insert(tx Transaction) error {
 	tw := newTSVWriter(file)
 	err = tw.Write(tx)
 	if err != nil {
-		return fmt.Errorf("TSVTable.Insert: could not add transaction to TSV file: %w", err)
+		return fmt.Errorf("TSVTable.Insert: %w", err)
+	}
+	tw.Flush()
+	err = tw.Error()
+	if err != nil {
+		return fmt.Errorf("TSVTable.Insert: %w", err)
 	}
 	return nil
 }

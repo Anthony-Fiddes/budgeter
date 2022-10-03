@@ -13,6 +13,8 @@ type CSVWriter struct {
 	*csv.Writer
 }
 
+// Write just writes a transaction to the internal buffer, you must remember to
+// call Flush()
 func (cw *CSVWriter) Write(tx Transaction) error {
 	row := []string{
 		tx.DateString(),
