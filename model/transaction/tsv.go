@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -82,6 +83,10 @@ func (t TSVTable) Remove(transactionID int) error {
 
 func (t TSVTable) Search(query string, limit int) ([]Transaction, error) {
 	transactions, err := t.read()
+	less := func(i, j int) bool {
+		return transactions[i].Date > transactions[j].Date
+	}
+	sort.Slice(transactions, less)
 	if err != nil {
 		return nil, fmt.Errorf("TSVTable.Search: %w", err)
 	}
