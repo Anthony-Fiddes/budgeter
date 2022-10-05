@@ -12,23 +12,28 @@ import (
 	"github.com/cheynewallace/tabby"
 )
 
-const reportName = "report"
+type report struct {
+	Transactions Table
+}
+
+func newReport(c *CLI) *report {
+	return &report{Transactions: c.Transactions}
+}
+
+func (r report) Name() string { return "report" }
 
 //go:embed reportUsage.txt
 var reportUsage string
 
+func (r report) Usage() string {
+	return reportUsage
+}
+
 // report tells the user how much they've spent over the last few months.
-func report(c *CLI) int {
+func (r report) Run(cmdArgs []string) error {
 	// defaultReportMonths determines how many months to query for when calling
 	// the report command.
 	const defaultReportMonths = 6
-
-	if len(c.args) != 0 {
-		c.err.Printf("%s takes no arguments", reportName)
-		c.err.Println()
-		c.err.Println(reportUsage)
-		return 1
-	}
 
 	type total struct {
 		month  time.Month
@@ -59,12 +64,9 @@ func report(c *CLI) int {
 	start = month.Add(start, -defaultReportMonths+1)
 	for i := 0; i < defaultReportMonths; i++ {
 		end := month.End(start)
-		amount, err := c.Transactions.RangeTotal(start, end)
+		amount, err := r.Transactions.RangeTotal(start, end)
 		if err != nil {
-			c.err.Printf("could not get totals for all of the requested months: %v", err)
-			c.err.Println("correctly collected totals: ")
-			c.err.Println(sPrintTotals(totals))
-			return 1
+			return fmt.Errorf("could not get totals for all of the requested months: %w", err)
 		}
 		totals = append(totals, total{month: start.Month(), amount: amount})
 		start = month.Add(start, 1)
@@ -72,5 +74,5 @@ func report(c *CLI) int {
 
 	fmt.Println(sPrintTotals(totals))
 
-	return 0
+	return nil
 }

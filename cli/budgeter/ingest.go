@@ -61,7 +61,7 @@ func (i ingest) Run(cmdArgs []string) error {
 	case extCSV:
 		f, err := os.Open(filePath)
 		if err != nil {
-			return fmt.Errorf("could not open \"%s\": %v", filePath, err)
+			return err
 		}
 		defer f.Close()
 
