@@ -179,7 +179,7 @@ func removeSpaces(s string) string {
 }
 
 func (v *VenmoReader) Read() (transaction.Transaction, error) {
-	cols, err := getRow(v.Reader, Venmo, 21)
+	cols, err := getRow(v.Reader, Venmo, 22)
 	if err != nil {
 		return transaction.Transaction{}, err
 	}
