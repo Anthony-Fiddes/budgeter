@@ -179,7 +179,7 @@ func removeSpaces(s string) string {
 }
 
 func (v *VenmoReader) Read() (transaction.Transaction, error) {
-	cols, err := getRow(v.Reader, Venmo, 19)
+	cols, err := getRow(v.Reader, Venmo, 21)
 	if err != nil {
 		return transaction.Transaction{}, err
 	}
@@ -213,7 +213,8 @@ func (v *VenmoReader) Read() (transaction.Transaction, error) {
 	if err != nil {
 		return transaction.Transaction{}, err
 	}
-	feeStr := removeSpaces(cols[10])
+	// TODO: handle the new tax column that they added
+	feeStr := removeSpaces(cols[11])
 	if feeStr != "" {
 		fee, err := transaction.GetCents(feeStr)
 		if err != nil {
