@@ -21,7 +21,7 @@ type Table interface {
 	RangeTotal(start, end time.Time) (transaction.Cent, error)
 	Remove(transactionID int) error
 	Search(query string, limit int) (*transaction.Rows, error)
-	Total() (transaction.Cent, error)
+	Range(start, end time.Time, limit int) (*transaction.Rows, error)
 }
 
 type Store interface {

@@ -3,9 +3,11 @@ package budgeter
 import (
 	_ "embed"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Anthony-Fiddes/budgeter/internal/month"
+	"github.com/Anthony-Fiddes/budgeter/model/transaction"
 	"github.com/cheynewallace/tabby"
 )
 
@@ -13,6 +15,7 @@ type recent struct {
 	limit        int
 	search       string
 	flip         bool
+	month        string
 	Transactions Table
 }
 
@@ -33,6 +36,62 @@ func (r recent) Usage() string {
 	return recentUsage
 }
 
+func multiParse(layouts []string, date string) (time.Time, error) {
+	for _, layout := range layouts {
+		result, err := time.Parse(layout, date)
+		if err == nil {
+			return result, nil 
+		}
+	}
+	return time.Time{}, fmt.Errorf("input time %q date could not be parsed with any provided layout (%q)", date, layouts)
+}
+
+func (r recent) getTransactions() ([]transaction.Transaction, error) {
+	if r.month != "" {
+		fmts := []string{"January/06", "January"}
+		inputMonth, err := multiParse(fmts, r.month)
+		if inputMonth.Year() == 0 {
+			now := time.Now()
+			inputMonth = inputMonth.AddDate(now.Year(), 0, 0)
+		}
+		fmt.Println(inputMonth)
+		if err != nil {
+			return nil, err
+		}
+		start := month.Start(inputMonth)
+		end := month.End(inputMonth)
+		rows, err := r.Transactions.Range(start, end, r.limit)
+		if err != nil {
+			return nil, err
+		}
+		transactions, err := rows.ScanSet()
+		if err != nil {
+			return nil, err
+		}
+		var result []transaction.Transaction
+		for _, tx := range transactions {
+			query := strings.ToLower(r.search)
+			entity := strings.ToLower(tx.Entity)
+			note := strings.ToLower(tx.Note)
+			if !strings.Contains(entity, query) && !strings.Contains(note, query) {
+				continue
+			}
+			result = append(result, tx)
+		}
+		return result, nil
+	}
+
+	rows, err := r.Transactions.Search(r.search, r.limit)
+	if err != nil {
+		return nil, err
+	}
+	transactions, err := rows.ScanSet()
+	if err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
+
 // recent lists the most recently added transactions.
 // TODO: Add a "pinned" feature/subcommand?
 // TODO: Add a total for searches
@@ -48,11 +107,11 @@ func (r recent) Run(cmdArgs []string) error {
 		noteHeader         = "Note"
 	)
 
-	var err error
 	fs := getFlagset(r.Name())
 	fs.StringVar(&r.search, "s", "", "")
 	fs.BoolVar(&r.flip, "f", false, "")
 	fs.IntVar(&r.limit, "l", defaultRecentLimit, "")
+	fs.StringVar(&r.month, "m", "", "")
 	if err := fs.Parse(cmdArgs); err != nil {
 		return err
 	}
@@ -62,17 +121,12 @@ func (r recent) Run(cmdArgs []string) error {
 		return fmt.Errorf("%s takes no arguments", r.Name())
 	}
 
-	rows, err := r.Transactions.Search(r.search, r.limit)
-	if err != nil {
-		return err
-	}
-	transactions, err := rows.ScanSet()
-	if err != nil {
-		return err
-	}
-
 	tab := tabby.New()
 	tab.AddHeader(idHeader, dateHeader, entityHeader, amountHeader, noteHeader)
+	transactions, err := r.getTransactions()
+	if err != nil {
+		return err
+	}
 	for i := 0; i < len(transactions); i++ {
 		index := i
 		if !r.flip {

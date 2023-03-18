@@ -6,6 +6,10 @@ Usage: recent
     -f Flip. Return the transactions in order from most recent to least recent.
     -l int
         Limit. The number of transactions to return (20 by default).
+    -m string
+        Month. March/23 would only return transactions from March of 2023. If it
+        was the year 2022, "February" would return transactions from February of
+        2022.
     -s string
         Search. Filters results so that only those including the given string are
-    shown.
+        shown.
