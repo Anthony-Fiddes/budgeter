@@ -43,7 +43,7 @@ func multiParse(layouts []string, date string) (time.Time, error) {
 			return result, nil
 		}
 	}
-	return time.Time{}, fmt.Errorf("input time %q date could not be parsed with any provided layout (%q)", date, layouts)
+	return time.Time{}, fmt.Errorf("input date %q could not be parsed with any provided layout (%q)", date, layouts)
 }
 
 func (r recent) getTransactions() ([]transaction.Transaction, error) {
