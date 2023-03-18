@@ -40,7 +40,7 @@ func multiParse(layouts []string, date string) (time.Time, error) {
 	for _, layout := range layouts {
 		result, err := time.Parse(layout, date)
 		if err == nil {
-			return result, nil 
+			return result, nil
 		}
 	}
 	return time.Time{}, fmt.Errorf("input time %q date could not be parsed with any provided layout (%q)", date, layouts)
@@ -54,7 +54,6 @@ func (r recent) getTransactions() ([]transaction.Transaction, error) {
 			now := time.Now()
 			inputMonth = inputMonth.AddDate(now.Year(), 0, 0)
 		}
-		fmt.Println(inputMonth)
 		if err != nil {
 			return nil, err
 		}
